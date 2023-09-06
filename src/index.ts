@@ -28,7 +28,7 @@ server.listen(8080, ()=>{
     
 })
 
-const MONGO_URL = "mongodb+srv://sunday:ajibolason@sunday.ssmpiyu.mongodb.net/schools?retryWrites=true&w=majority"
+const MONGO_URL = "mongodb+srv://sunday:ajibolason@sunday.ssmpiyu.mongodb.net/?retryWrites=true&w=majority"
 // "mongodb+srv://sunday:<password>@sunday.ssmpiyu.mongodb.net/?retryWrites=true&w=majority"
 
 mongoose.Promise = Promise

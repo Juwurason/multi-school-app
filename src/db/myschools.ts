@@ -5,10 +5,8 @@ export interface ISchool extends Document {
   name: string;
   email: string;
   password: string;
-  // location?: string;
   address?: string;
   phoneNumber?: string;
-  // website?: string;
   city?: string;
   state?: string;
   role?: string;
@@ -16,7 +14,7 @@ export interface ISchool extends Document {
   isValidPassword(password: string): Promise<boolean>;
 }
 
-const schoolSchema: Schema = new Schema<ISchool>({
+const myschoolSchema: Schema = new Schema<ISchool>({
   name: {
     type: String,
     required: true,
@@ -46,7 +44,7 @@ const schoolSchema: Schema = new Schema<ISchool>({
 });
 
 
-schoolSchema.methods.isValidPassword = async function (password: string): Promise<boolean> {
+myschoolSchema.methods.isValidPassword = async function (password: string): Promise<boolean> {
     try {
       return await bcrypt.compare(password, this.password);
     } catch (error) {
@@ -54,8 +52,6 @@ schoolSchema.methods.isValidPassword = async function (password: string): Promis
     }
   };
 
-const School: Model<ISchool> = mongoose.model<ISchool>('School', schoolSchema);
+const mySchool: Model<ISchool> = mongoose.model<ISchool>('mySchool', myschoolSchema);
 
-export const getSchools = () => School.find()
-
-export default School;
+export default mySchool;

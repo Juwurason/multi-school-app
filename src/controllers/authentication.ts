@@ -5,7 +5,7 @@ import { getUserByEmail, createUser } from '../db/users';
 import { random, authentication } from '../helpers';
 
 import express, { Request, Response } from 'express';
-import School, { ISchool } from '../db/school'; // Import your School model
+import mySchool, { ISchool } from '../db/myschools'; // Import your School model
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { serialize } from 'cookie';
@@ -20,7 +20,7 @@ export const login = async (req: express.Request, res: express.Response) => {
       const { email, password } = req.body;
   
       // Find the user in your database based on the email
-      const user = await School.findOne({ email });
+      const user = await mySchool.findOne({ email });
   
       if (!user) {
         return res.status(401).json({ message: 'Invalid email.' });
@@ -35,8 +35,8 @@ export const login = async (req: express.Request, res: express.Response) => {
   
       // Generate a JWT token
       const token = jwt.sign(
-        { schoolId: user._id, email: user.email, name: user.name, location: user.location,
-            address: user.address, phoneNuber: user.phoneNumber, website: user.website, city: user.city,
+        { schoolId: user._id, email: user.email, name: user.name,
+            address: user.address, phoneNuber: user.phoneNumber, city: user.city,
             state: user.state, role: user.role, category: user.school_category
         },
         "mongodb//sunday:ajibolason@sund",
@@ -68,14 +68,13 @@ export const register = async (req: Request, res: Response) => {
     try {
       // Extract user registration data from the request body
       const {
-        // schoolCode,
         name,
         email,
         password,
-        location,
+        // location,
         address,
         phoneNumber,
-        website,
+        // website,
         city,
         state,
         role,
@@ -91,7 +90,7 @@ export const register = async (req: Request, res: Response) => {
     }
   
       // Check if a school with the same email already exists
-      const existingSchool = await School.findOne({ email });
+      const existingSchool = await mySchool.findOne({ email });
       if (existingSchool) {
         return res.status(400).json({ message: 'School with this email already exists.' });
       }
@@ -106,15 +105,14 @@ export const register = async (req: Request, res: Response) => {
       const hashedPassword = await bcrypt.hash(password, 10);
   
       // Create a new school document
-      const newSchool: ISchool = new School({
-        // schoolCode,
+      const newSchool: ISchool = new mySchool({
         name,
         email,
         password: hashedPassword, // Store the hashed password
-        location,
+        // location,
         address,
         phoneNumber,
-        website,
+        // website,
         city,
         state,
         role,
@@ -125,8 +123,8 @@ export const register = async (req: Request, res: Response) => {
       await newSchool.save();
   
       const token = jwt.sign(
-        { schoolId: newSchool._id, email: newSchool.email, name: newSchool.name, location: newSchool.location,
-        address: newSchool.address, phoneNuber: newSchool.phoneNumber, website: newSchool.website, city: newSchool.city,
+        { schoolId: newSchool._id, email: newSchool.email, name: newSchool.name,
+        address: newSchool.address, phoneNuber: newSchool.phoneNumber, city: newSchool.city,
         state: newSchool.state, role: newSchool.role, category: newSchool.school_category
         },
         "mongodb//sunday:ajibolason@sund", // Replace with your actual secret key
