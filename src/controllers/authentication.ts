@@ -11,7 +11,7 @@ import jwt from 'jsonwebtoken'
 import { serialize } from 'cookie';
 import dotenv from 'dotenv';
 dotenv.config();
-import { sendOtpEmail } from '../helpers/send-otp';
+// import { sendOtpEmail } from '../helpers/send-otp';
 
 
 
@@ -59,10 +59,10 @@ export const login = async (req: express.Request, res: express.Response) => {
     }
   }
 
-  function generateOTP(): string {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    return otp;
-  }
+  // function generateOTP(): string {
+  //   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  //   return otp;
+  // }
   
 export const register = async (req: Request, res: Response) => {
     try {
@@ -96,11 +96,11 @@ export const register = async (req: Request, res: Response) => {
         return res.status(400).json({ message: 'School with this email already exists.' });
       }
 
-       // Generate OTP
-    const otp = generateOTP();
+    //    // Generate OTP
+    // const otp = generateOTP();
 
-    // Send OTP email
-    await sendOtpEmail(email, otp);
+    // // Send OTP email
+    // await sendOtpEmail(email, otp);
   
       // Hash the password before storing it in the database
       const hashedPassword = await bcrypt.hash(password, 10);
