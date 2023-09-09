@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
-import School from './db/school'; // Import your School model
-import { Request } from 'express';
+import mySchool, { ISchool } from './db/myschools';
+
 
 const JWT_SECRET = "mongodb//sunday:ajibolason@sund"; // Replace with your actual secret key
 
@@ -13,14 +13,18 @@ const options = {
 passport.use(
   new JwtStrategy(options, async (jwtPayload, done) => {
     try {
-      const user = await School.findById(jwtPayload.schoolId);
+      // console.log('Decoded JWT Payload:', jwtPayload);
+
+      const user = await mySchool.findById(jwtPayload.schoolId);
 
       if (!user) {
+        // console.log("decode error");
         return done(null, false);
       }
-
+      
       return done(null, user);
     } catch (error) {
+      console.error('Error verifying token:', error);
       return done(error, false);
     }
   })

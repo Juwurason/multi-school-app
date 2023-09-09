@@ -1,6 +1,19 @@
-import mongoose from "mongoose"
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
-const teacherSchema = new mongoose.Schema({
+// Define the Teacher schema
+export interface ITeacher extends Document {
+  name: string;
+  lastName: string;
+  address: string;
+  phoneNumber: string;
+  email: string;
+  gender: string;
+  teacherClass: string;
+  staffId: string;
+  school: Schema.Types.ObjectId; 
+}
+
+const teacherSchema: Schema = new Schema<ITeacher>({
   name: {
     type: String,
     required: true,
@@ -11,13 +24,25 @@ const teacherSchema = new mongoose.Schema({
     unique: true,
   },
   school: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "School", // Reference the School model
+    type: Schema.Types.ObjectId,
+    ref: 'School', // Reference to the School model
     required: true,
   },
-  
-  // Other teacher-related fields...
-  
+  lastName: String,
+  address: String,
+  phoneNumber: String,
+  gender: String,
+  teacherClass: String,
+  staffId: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+}, {
+  timestamps: true,
 });
 
-module.exports = mongoose.model("Teacher", teacherSchema);
+// Define the Teacher model
+const Teacher: Model<ITeacher> = mongoose.model<ITeacher>('Teacher', teacherSchema);
+
+export default Teacher;

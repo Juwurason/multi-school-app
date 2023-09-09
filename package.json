@@ -32,7 +32,9 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "-": "^0.0.1",
     "@mailchimp/mailchimp_transactional": "^1.0.50",
+    "@types/shortid": "^0.0.29",
     "axios": "^1.5.0",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.2",
@@ -40,6 +42,7 @@
     "cookie": "^0.5.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "D": "^1.0.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.2",
@@ -48,7 +51,8 @@
     "multer": "^1.4.5-lts.1",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "shortid": "^2.2.16"
   },
   "description": ""
 }
