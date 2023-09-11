@@ -17,49 +17,72 @@ import { admin } from '../firebaseConfig';
 import * as path from 'path';
 
 
-export const login = async (req: express.Request, res: express.Response) => {
-    try {
-      const { email, password } = req.body;
-  
-      // Find the user in your database based on the email
-      const user = await mySchool.findOne({ email });
-  
-      if (!user) {
-        return res.status(401).json({ message: 'Invalid email.' });
-      }
-  
-      // Check if the password matches
-      const passwordMatch = await bcrypt.compare(password, user.password);
-  
-      if (!passwordMatch) {
-        return res.status(401).json({ message: 'Invalid password.' });
-      }
-  
-      // Generate a JWT token
-      const token = jwt.sign(
-        { schoolId: user._id, email: user.email, name: user.name,
-            address: user.address, phoneNuber: user.phoneNumber, city: user.city,
-            state: user.state, role: user.role, category: user.school_category
-        },
-        "mongodb//sunday:ajibolason@sund",
-        {
-          expiresIn: '1h', // Token expiration time
-        }
-      );
-  
-      // Send the token as an HTTP-only cookie
-      res.cookie('token', token, {
-        httpOnly: true,
-        maxAge: 60 * 60 * 1000, // 1 hour in milliseconds
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-      });
-      res.status(200).json({ message: 'Login successful.', token});
-    } catch (error) {
-      console.error('Error during login:', error);
-      res.status(500).json({ message: 'An error occurred during login.' });
+// Step 1 - Verify Email
+export const verifyEmail = async (req: express.Request, res: express.Response) => {
+  try {
+    const { email } = req.body;
+
+    // Find the user in your database based on the email
+    const user = await mySchool.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email.' });
     }
+
+    // Send the user's name (or any other relevant information) in the response
+    res.status(200).json({ message: 'Email verified.', name: user.name, email: user.email });
+  } catch (error) {
+    console.error('Error during email verification:', error);
+    res.status(500).json({ message: 'An error occurred during email verification.' });
   }
+};
+
+// Step 2 - Confirm Password
+export const confirmPassword = async (req: express.Request, res: express.Response) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find the user in your database based on the email
+    const user = await mySchool.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email.' });
+    }
+
+    // Check if the password matches
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Invalid password.' });
+    }
+
+    // Generate a JWT token
+    const token = jwt.sign(
+      {
+        schoolId: user._id,
+        email: user.email,
+        name: user.name,
+        address: user.address,
+        phoneNumber: user.phoneNumber,
+        city: user.city,
+        state: user.state,
+        role: user.role,
+        category: user.school_category,
+      },
+      "mongodb//sunday:ajibolason@sund",
+      {
+        expiresIn: '1h', // Token expiration time
+      }
+    );
+
+    // Send the token in the response
+    res.status(200).json({ message: 'Login successful.', token });
+  } catch (error) {
+    console.error('Error during password confirmation:', error);
+    res.status(500).json({ message: 'An error occurred during password confirmation.' });
+  }
+};
+
 
   // function generateOTP(): string {
   //   const otp = Math.floor(100000 + Math.random() * 900000).toString();
