@@ -9,7 +9,9 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 export default (router: express.Router) => {
-    
+    router.get("/", (req, res) =>{
+        res.json({message: "Hello, backend"})
+    })
     router.get('/get_all_teacher-by_school_Id/:schoolId/teachers', passport.authenticate('jwt', { session: false }), getTeachersBySchoolId);
     router.get('/get_teacher_byId/:id', passport.authenticate('jwt', { session: false }), getTeachersById);
     router.get('/get_school_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolById);
