@@ -11,6 +11,7 @@ export interface ITeacher extends Document {
   teacherClass: string;
   staffId: string;
   school: Schema.Types.ObjectId; 
+  profilePictureUrl?: string;
 }
 
 const teacherSchema: Schema = new Schema<ITeacher>({
@@ -38,6 +39,7 @@ const teacherSchema: Schema = new Schema<ITeacher>({
     unique: true,
     required: true,
   },
+  profilePictureUrl: String,
 }, {
   timestamps: true,
 });

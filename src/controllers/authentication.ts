@@ -11,8 +11,10 @@ import jwt from 'jsonwebtoken'
 import { serialize } from 'cookie';
 import dotenv from 'dotenv';
 dotenv.config();
-// import { sendOtpEmail } from '../helpers/send-otp';
-
+import { isValidObjectId } from 'mongoose'
+import { v4 as uuidv4 } from 'uuid';
+import { admin } from '../firebaseConfig';
+import * as path from 'path';
 
 
 export const login = async (req: express.Request, res: express.Response) => {
@@ -109,10 +111,8 @@ export const register = async (req: Request, res: Response) => {
         name,
         email,
         password: hashedPassword, // Store the hashed password
-        // location,
         address,
         phoneNumber,
-        // website,
         city,
         state,
         role,
@@ -149,5 +149,97 @@ export const register = async (req: Request, res: Response) => {
     }
   }
   
-
+  export const getSchoolById: express.RequestHandler = async (req, res) => {
+    try {
+      const { id } = req.params;
+  
+      // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid school ID' });
+      }
+  
+      const teacher: ISchool | null = await mySchool.findById(id);
+  
+      if (!teacher) {
+        return res.status(404).json({ error: 'School not found' });
+      }
+  
+      return res.status(200).json(teacher);
+    } catch (error) {
+      console.error('Error fetching school by schoolId:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
+  export const updateSchoolById: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { name, address, phoneNumber, city, state, role, school_category, website } = req.body;
+      
+      // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid school ID' });
+      }
+      
+      // Find the school by ID
+      const existingSchool: ISchool | null = await mySchool.findById(id);
+  
+      if (!existingSchool) {
+        return res.status(404).json({ error: 'School not found' });
+      }
+  
+      // Check if a school Logo is provided
+      if (req.file) {
+        // Delete the existing school Logo from Firebase Storage
+        if (existingSchool.schoolLogoUrl) {
+          const bucket = admin.storage().bucket();
+          const existingFileName = existingSchool.schoolLogoUrl.split('/').pop();
+          if (existingFileName) {
+            const fileToDelete = bucket.file(existingFileName);
+            await fileToDelete.delete();
+          }
+        }
+  
+        // Upload the new school Logo to Firebase Storage
+        const file = req.file;
+  
+        // Generate a unique filename for the school Logo
+        const fileName = `${uuidv4()}${path.extname(file.originalname)}`;
+        const bucket = admin.storage().bucket();
+  
+        const fileUpload = bucket.file(fileName);
+        const fileBuffer = file.buffer;
+  
+        // Upload the file to Firebase Storage
+        await fileUpload.save(fileBuffer, {
+          metadata: {
+            contentType: file.mimetype,
+          },
+        });
+  
+        // Get the school Logo URL
+        const fileUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+  
+        // Update the teacher's school Logo URL in the database
+        existingSchool.schoolLogoUrl = fileUrl;
+      }
+      // Update other teacher information
+      existingSchool.name = name;
+      existingSchool.address = address;
+      existingSchool.phoneNumber = phoneNumber;
+      existingSchool.city = city;
+      existingSchool.state = state;
+      existingSchool.role = role;
+      existingSchool.school_category = school_category;
+      existingSchool.website = website;
+  
+      // Save the updated school to the database
+      await existingSchool.save();
+  
+      return res.status(200).json({ message: 'School updated successfully', updatedSchool: existingSchool });
+    } catch (error) {
+      console.error('Error updating school by ID:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
 
