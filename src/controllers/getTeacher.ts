@@ -1,6 +1,6 @@
 // Import necessary modules and models
 import express from 'express';
-import Teacher, { ITeacher } from '../db/teacher';; // Import the Teacher model
+import Teacher, { ITeacher } from '../db/teacher'; // Import the Teacher model
 import mySchool, { ISchool } from '../db/myschools'; // Import the School model
 import { isValidObjectId } from 'mongoose'
 
