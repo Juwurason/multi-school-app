@@ -3,8 +3,36 @@ import express from 'express';
 import Teacher, { ITeacher } from '../db/teacher'; // Import the Teacher model
 import mySchool, { ISchool } from '../db/myschools'; // Import the School model
 import { isValidObjectId } from 'mongoose'
+import { Storage } from '@google-cloud/storage';
+
+import * as path from 'path';
+
+// const serviceAccountPath = path.join(__dirname, 'school-app-62650-firebase-adminsdk-d2vuw-226f2decbc.json');
+
+const storage = new Storage({
+  keyFilename: path.join(__dirname, 'school-app-62650-firebase-adminsdk-d2vuw-226f2decbc.json'),
+});
 
 
+async function getSignedUrl(bucketName: string, filename: string): Promise<string | null> {
+  try {
+    const options: {
+      version: 'v4'; // Use version 4 of the signed URL
+      action: 'read'; // Specify the action as 'read'
+      expires: number;
+    } = {
+      version: 'v4',
+      action: 'read',
+      expires: Date.now() + 15 * 60 * 1000, // Expiration time (15 minutes)
+    };
+
+    const [url] = await storage.bucket(bucketName).file(filename).getSignedUrl(options);
+    return url;
+  } catch (error) {
+    console.error('Error generating signed URL:', error);
+    return null;
+  }
+}
 
 export const getTeachersById: express.RequestHandler = async (req, res) => {
   try {
@@ -20,6 +48,14 @@ export const getTeachersById: express.RequestHandler = async (req, res) => {
     if (!teacher) {
       return res.status(404).json({ error: 'Teacher not found' });
     }
+
+    //  // Generate a signed URL for the teacher's image
+    //  const imageUrl = await getSignedUrl('school-app-62650.appspot.com', teacher.profilePictureUrl);
+
+    //  if (imageUrl) {
+    //   // Add the image URL to the teacher object
+    //   teacher.profilePictureUrl = imageUrl;
+    // }
 
     return res.status(200).json(teacher);
   } catch (error) {
