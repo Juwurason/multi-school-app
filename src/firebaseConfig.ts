@@ -8,6 +8,7 @@ const serviceAccountPath = path.join(__dirname, 'school-app-62650-firebase-admin
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccountPath),
   storageBucket: 'gs://school-app-62650.appspot.com',
+  // storageBucket: 'gs://grapple-a4d53.appspot.com/',
 });
 
 export { admin };

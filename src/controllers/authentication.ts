@@ -16,6 +16,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { admin } from '../firebaseConfig';
 import * as path from 'path';
 
+import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
+import {Storage, Bucket_url} from '../config/firebase';
+
 
 // Step 1 - Verify Email
 export const verifyEmail = async (req: express.Request, res: express.Response) => {
@@ -213,40 +216,37 @@ export const register = async (req: Request, res: Response) => {
   
       // Check if a school Logo is provided
       if (req.file) {
-        // Delete the existing school Logo from Firebase Storage
+        // Check if there is an existing profile picture
         if (existingSchool.schoolLogoUrl) {
-          const bucket = admin.storage().bucket();
-          const existingFileName = existingSchool.schoolLogoUrl.split('/').pop();
-          if (existingFileName) {
-            const fileToDelete = bucket.file(existingFileName);
-            await fileToDelete.delete();
+          // Construct the reference to the existing logo
+          const fileRefToDelete = ref(Storage, existingSchool.schoolLogoUrl);
+          // console.log('Attempting to delete:', fileRefToDelete.fullPath);
+          try {
+            // Now, you can safely delete the object
+            await deleteObject(fileRefToDelete);
+            // console.log('Deleted successfully');
+          } catch (error) {
+            console.error('Error deleting existing image:', error);
+            // Handle the error as needed
           }
         }
-  
-        // Upload the new school Logo to Firebase Storage
+      
+        // Upload the new image
         const file = req.file;
-  
-        // Generate a unique filename for the school Logo
         const fileName = `${uuidv4()}${path.extname(file.originalname)}`;
-        const bucket = admin.storage().bucket();
-  
-        const fileUpload = bucket.file(fileName);
-        const fileBuffer = file.buffer;
-  
-        // Upload the file to Firebase Storage
-        await fileUpload.save(fileBuffer, {
-          metadata: {
-            contentType: file.mimetype,
-          },
+        const folderName = 'My-School-app';
+        const bucketRef = ref(Storage, Bucket_url);
+        const fileRef = ref(bucketRef, `${folderName}/${fileName}`);
+        await uploadBytes(fileRef, req.file.buffer, {
+          contentType: req.file.mimetype,
         });
-  
-        // Get the school Logo URL
-        const fileUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-  
-        // Update the teacher's school Logo URL in the database
+      
+        // Update the profile picture URL with the URL of the new image
+        const fileUrl = await getDownloadURL(fileRef);
         existingSchool.schoolLogoUrl = fileUrl;
       }
-      // Update other teacher information
+  
+       // Update other teacher information
       existingSchool.name = name;
       existingSchool.address = address;
       existingSchool.phoneNumber = phoneNumber;
@@ -256,7 +256,7 @@ export const register = async (req: Request, res: Response) => {
       existingSchool.school_category = school_category;
       existingSchool.website = website;
   
-      // Save the updated school to the database
+      // Save the updated teacher to the database
       await existingSchool.save();
   
       return res.status(200).json({ message: 'School updated successfully', updatedSchool: existingSchool });

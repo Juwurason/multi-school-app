@@ -5,7 +5,8 @@ import { isValidObjectId } from 'mongoose'
 import shortid from 'shortid'
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { admin } from '../firebaseConfig';
+import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
+import {Storage, Bucket_url} from '../config/firebase';
 
 function generateStaffId() {
   return `STF-${shortid.generate()}`;
@@ -24,37 +25,31 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       return res.status(404).json({ error: 'School not found' });
     }
 
+    // const Bucket_url = "gs://grapple-a4d53.appspot.com"
     // Check if the email already exists in the database
     const existingTeacher: ITeacher | null = await Teacher.findOne({ email });
 
     if (existingTeacher) {
       return res.status(400).json({ error: 'Email already exists' });
     }
-
+    // const fileName = `${uuidv4()}${path.extname(file.originalname)}
     let fileUrl: string | undefined;
 
-    // Check if a profile picture is provided
     if (req.file) {
-      // Upload the profile picture to Firebase Storage
       const file = req.file;
-
-      // Generate a unique filename for the profile picture
-      const fileName = `${uuidv4()}${path.extname(file.originalname)}`;
-      const bucket = admin.storage().bucket();
-
-      const fileUpload = bucket.file(fileName);
-      const fileBuffer = file.buffer;
-
-      // Upload the file to Firebase Storage
-      await fileUpload.save(fileBuffer, {
-        metadata: {
-          contentType: file.mimetype,
-        },
+      const fileName = `${uuidv4()}${path.extname(file.originalname)}`
+      const folderName = 'My-School-app'
+      const bucketRef = ref(Storage, Bucket_url);
+      const fileRef = ref(bucketRef, `${folderName}/${fileName}`);
+      await uploadBytes(fileRef, req.file.buffer, {
+        contentType: req.file.mimetype,
       });
 
-      // Get the profile picture URL
-      fileUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
+       // Get the profile picture URL
+
+        fileUrl = await getDownloadURL(fileRef);
     }
+
 
     const staffId: string = generateStaffId();
 
@@ -88,17 +83,16 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
   }
 };
 
-
 export const updateTeacherById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, lastName, address, phoneNumber, gender, teacherClass } = req.body;
-    
+
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
     if (!isValidObjectId(id)) {
       return res.status(400).json({ error: 'Invalid teacher ID' });
     }
-    
+
     // Find the teacher by ID
     const existingTeacher: ITeacher | null = await Teacher.findById(id);
 
@@ -106,39 +100,39 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
       return res.status(404).json({ error: 'Teacher not found' });
     }
 
-    // Check if a profile picture is provided
+    // Check if a new image is provided in the request
     if (req.file) {
-      // Delete the existing profile picture from Firebase Storage
+      // Check if there is an existing profile picture
       if (existingTeacher.profilePictureUrl) {
-        const bucket = admin.storage().bucket();
-        const existingFileName = existingTeacher.profilePictureUrl.split('/').pop();
-        if (existingFileName) {
-          const fileToDelete = bucket.file(existingFileName);
-          await fileToDelete.delete();
+        // Split the existing URL to get the image name
+        const imageUrlParts = existingTeacher.profilePictureUrl.split('/');
+        // Construct the reference to the existing image
+        const fileRefToDelete = ref(Storage, existingTeacher.profilePictureUrl);
+        // console.log('Attempting to delete:', fileRefToDelete.fullPath);
+        try {
+          const metadata = await getMetadata(fileRefToDelete);
+          // console.log('Metadata of the object:', metadata);
+          // Now, you can safely delete the object
+          await deleteObject(fileRefToDelete);
+          // console.log('Deleted successfully');
+        } catch (error) {
+          console.error('Error deleting existing image:', error);
+          // Handle the error as needed
         }
       }
-
-      // Upload the new profile picture to Firebase Storage
+    
+      // Upload the new image
       const file = req.file;
-
-      // Generate a unique filename for the profile picture
       const fileName = `${uuidv4()}${path.extname(file.originalname)}`;
-      const bucket = admin.storage().bucket();
-
-      const fileUpload = bucket.file(fileName);
-      const fileBuffer = file.buffer;
-
-      // Upload the file to Firebase Storage
-      await fileUpload.save(fileBuffer, {
-        metadata: {
-          contentType: file.mimetype,
-        },
+      const folderName = 'My-School-app';
+      const bucketRef = ref(Storage, Bucket_url);
+      const fileRef = ref(bucketRef, `${folderName}/${fileName}`);
+      await uploadBytes(fileRef, req.file.buffer, {
+        contentType: req.file.mimetype,
       });
-
-      // Get the profile picture URL
-      const fileUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-
-      // Update the teacher's profile picture URL in the database
+    
+      // Update the profile picture URL with the URL of the new image
+      const fileUrl = await getDownloadURL(fileRef);
       existingTeacher.profilePictureUrl = fileUrl;
     }
 
