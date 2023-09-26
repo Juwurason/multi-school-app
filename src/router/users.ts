@@ -6,7 +6,7 @@ import multer from 'multer';
 import { getSchoolById, updateSchoolById } from '../controllers/authentication';
 import { newsLetter, getLetterBySchoolId } from '../controllers/newsLetter'
 import { createStudent, deleteStudentById, getStudentsById, getStudentsBySchoolId, updateStudentById } from '../controllers/student';
-import { getSchoolClassBySchoolId, schoolClass } from '../controllers/schoolClass';
+import { getSchoolClassById, getSchoolClassBySchoolId, schoolClass } from '../controllers/schoolClass';
 // Create a Multer storage for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -20,6 +20,7 @@ export default (router: express.Router) => {
     router.get('/get_all_students-by_school_Id/:schoolId/students', passport.authenticate('jwt', { session: false }), getStudentsBySchoolId);
     router.get('/get_all_news_Letter_by_school_Id/:schoolId/newsLetter', passport.authenticate('jwt', { session: false }), getLetterBySchoolId);
     router.get('/get_teacher_byId/:id', passport.authenticate('jwt', { session: false }), getTeachersById);
+    router.get('/get_class_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolClassById);
     router.get('/get_student_byId/:id', passport.authenticate('jwt', { session: false }), getStudentsById);
     router.get('/get_school_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolById);
     router.post('/delete_teacher/:id', passport.authenticate('jwt', { session: false }), deleteTeacherById);
