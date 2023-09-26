@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import mySchool, { ISchool } from '../db/myschools';
 import Teacher, { ITeacher } from '../db/teacher';
+import SchoolClass, { ISchoolClass } from '../db/schoolClass';
 import { isValidObjectId } from 'mongoose'
 import shortid from 'shortid'
 import * as path from 'path';
@@ -8,8 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
 import {Storage, Bucket_url} from '../config/firebase';
 
-function generateStaffId() {
-  return `STF-${shortid.generate()}`;
+function generateStaffId(schoolShortName: string): string {
+  return `${schoolShortName}-${shortid.generate()}`;
 }
 
 // Update your createTeacher route
@@ -23,7 +24,9 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
 
     if (!school) {
       return res.status(404).json({ error: 'School not found' });
-    }
+    } 
+
+    const schoolShortName = school.name.substring(0, 3).toUpperCase();
 
     // const Bucket_url = "gs://grapple-a4d53.appspot.com"
     // Check if the email already exists in the database
@@ -50,8 +53,10 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
         fileUrl = await getDownloadURL(fileRef);
     }
 
+    // Fetch the classes based on the provided class IDs
+    const assignedClasses: ISchoolClass[] = await SchoolClass.find({ _id: { $in: teacherClass } });
 
-    const staffId: string = generateStaffId();
+    const staffId: string = generateStaffId(schoolShortName);
 
     // Create a new teacher with or without the profile picture URL
     const teacherData: any = {
@@ -61,7 +66,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       phoneNumber,
       email,
       gender,
-      teacherClass,
+      teacherClass: assignedClasses,
       school: school._id,
       staffId,
     };
