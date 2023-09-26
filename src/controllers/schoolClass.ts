@@ -92,3 +92,26 @@ export const schoolClass: express.RequestHandler = async (req: Request, res: Res
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+  export const deleteSchoolClassById: express.RequestHandler = async (req, res) => {
+    try {
+    const { id } = req.params;
+
+    // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid teacher ID' });
+    }
+
+    // Find the schoolClass by ID and delete it
+    const deletedSchoolClass: ISchoolClass | null = await SchoolClass.findByIdAndRemove(id);
+
+    if (!deletedSchoolClass) {
+      return res.status(404).json({ error: 'School Class not found' });
+    }
+
+    return res.status(200).json({ message: 'School Class deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting School Class by ID:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
