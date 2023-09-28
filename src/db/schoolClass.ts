@@ -15,6 +15,7 @@ const schoolClasses: Schema = new Schema<ISchoolClass>({
     required: true,
   },
   schoolClass: String,
+  
   assignedTeacher: {
     type: Schema.Types.ObjectId,
     ref: 'Teacher', // Reference to the Teacher model

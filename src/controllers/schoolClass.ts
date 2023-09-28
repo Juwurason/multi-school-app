@@ -62,7 +62,7 @@ export const schoolClass: express.RequestHandler = async (req: Request, res: Res
       }
   
       // Fetch SchoolClass associated with the school
-      const schoolClass = await SchoolClass.find({ school: school._id });
+      const schoolClass = await SchoolClass.find({ school: school._id }).populate('assignedTeacher');
   
       return res.status(200).json(schoolClass);
     } catch (error) {
