@@ -14,6 +14,81 @@ function generateStaffId(schoolShortName: string): string {
 }
 
 // Update your createTeacher route
+// export const createTeacher: express.RequestHandler = async (req: Request, res: Response) => {
+//   try {
+//     const { name, lastName, address, phoneNumber, email, gender, teacherClass } = req.body;
+//     const { schoolId } = req.params;
+
+//     // Check if the school with the provided schoolId exists
+//     const school: ISchool | null = await mySchool.findById(schoolId);
+
+//     if (!school) {
+//       return res.status(404).json({ error: 'School not found' });
+//     } 
+
+//     const schoolShortName = school.name.substring(0, 3).toUpperCase();
+
+//     // const Bucket_url = "gs://grapple-a4d53.appspot.com"
+//     // Check if the email already exists in the database
+//     const existingTeacher: ITeacher | null = await Teacher.findOne({ email });
+
+//     if (existingTeacher) {
+//       return res.status(400).json({ error: 'Email already exists' });
+//     }
+//     // const fileName = `${uuidv4()}${path.extname(file.originalname)}
+//     let fileUrl: string | undefined;
+
+//     if (req.file) {
+//       const file = req.file;
+//       const fileName = `${uuidv4()}${path.extname(file.originalname)}`
+//       const folderName = 'My-School-app'
+//       const bucketRef = ref(Storage, Bucket_url);
+//       const fileRef = ref(bucketRef, `${folderName}/${fileName}`);
+//       await uploadBytes(fileRef, req.file.buffer, {
+//         contentType: req.file.mimetype,
+//       });
+
+//        // Get the profile picture URL
+
+//         fileUrl = await getDownloadURL(fileRef);
+//     }
+
+//     const teacherClassId = teacherClass
+//     // Fetch the classes based on the provided class IDs
+//     // const assignedClasses: ISchoolClass[] = await SchoolClass.find({ _id: { $in: teacherClass } });
+
+//     const staffId: string = generateStaffId(schoolShortName);
+
+//     // Create a new teacher with or without the profile picture URL
+//     const teacherData: any = {
+//       name,
+//       lastName,
+//       address,
+//       phoneNumber,
+//       email,
+//       gender,
+//       teacherClass: teacherClassId,
+//       school: school._id,
+//       staffId,
+//     };
+
+//     if (fileUrl) {
+//       teacherData.profilePictureUrl = fileUrl;
+//     }
+
+//     // Create the teacher object
+//     const teacher: ITeacher = new Teacher(teacherData);
+
+//     // Save the teacher to the database
+//     await teacher.save();
+
+//     return res.status(201).json({ message: 'Teacher created successfully', teacher });
+//   } catch (error) {
+//     console.error('Error creating teacher:', error);
+//     return res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
 export const createTeacher: express.RequestHandler = async (req: Request, res: Response) => {
   try {
     const { name, lastName, address, phoneNumber, email, gender, teacherClass } = req.body;
@@ -28,14 +103,13 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
 
     const schoolShortName = school.name.substring(0, 3).toUpperCase();
 
-    // const Bucket_url = "gs://grapple-a4d53.appspot.com"
     // Check if the email already exists in the database
     const existingTeacher: ITeacher | null = await Teacher.findOne({ email });
 
     if (existingTeacher) {
       return res.status(400).json({ error: 'Email already exists' });
     }
-    // const fileName = `${uuidv4()}${path.extname(file.originalname)}
+
     let fileUrl: string | undefined;
 
     if (req.file) {
@@ -48,15 +122,16 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
         contentType: req.file.mimetype,
       });
 
-       // Get the profile picture URL
-
-        fileUrl = await getDownloadURL(fileRef);
+      // Get the profile picture URL
+      fileUrl = await getDownloadURL(fileRef);
     }
 
-    // Fetch the classes based on the provided class IDs
-    const assignedClasses: ISchoolClass[] = await SchoolClass.find({ _id: { $in: teacherClass } });
+    // Find the schoolClass by its ObjectId
+    const schoolClass = await SchoolClass.findById(teacherClass);
 
-    const staffId: string = generateStaffId(schoolShortName);
+    if (!schoolClass) {
+      return res.status(404).json({ error: 'School class not found' });
+    }
 
     // Create a new teacher with or without the profile picture URL
     const teacherData: any = {
@@ -66,9 +141,9 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       phoneNumber,
       email,
       gender,
-      teacherClass: assignedClasses,
+      teacherClass: teacherClass, // Store the teacherClassId
       school: school._id,
-      staffId,
+      staffId: generateStaffId(schoolShortName),
     };
 
     if (fileUrl) {
@@ -81,12 +156,18 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
     // Save the teacher to the database
     await teacher.save();
 
+    // Update the assignedTeacher field in the schoolClass document
+    schoolClass.assignedTeacher = teacher._id; // Use the teacher's ObjectId
+
+    await schoolClass.save();
+
     return res.status(201).json({ message: 'Teacher created successfully', teacher });
   } catch (error) {
     console.error('Error creating teacher:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 export const updateTeacherById: express.RequestHandler = async (req: Request, res: Response) => {
   try {

@@ -14,7 +14,7 @@ export const getTeachersById: express.RequestHandler = async (req, res) => {
       return res.status(400).json({ error: 'Invalid teacher ID' });
     }
 
-    const teacher: ITeacher | null = await Teacher.findById(id);
+    const teacher: ITeacher | null = await Teacher.findById(id).populate('teacherClass');
 
     if (!teacher) {
       return res.status(404).json({ error: 'Teacher not found' });
