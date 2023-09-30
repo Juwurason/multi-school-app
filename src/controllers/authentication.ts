@@ -6,6 +6,7 @@ import { random, authentication } from '../helpers';
 
 import express, { Request, Response } from 'express';
 import mySchool, { ISchool } from '../db/myschools'; // Import your School model
+import Teacher, { ITeacher } from '../db/teacher';
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { serialize } from 'cookie';
@@ -23,17 +24,31 @@ import {Storage, Bucket_url} from '../config/firebase';
 // Step 1 - Verify Email
 export const verifyEmail = async (req: express.Request, res: express.Response) => {
   try {
-    const { email } = req.body;
+    const { email, role } = req.body;
 
+    if (!role) {
+      return res.status(401).json({ message: 'Invalid role.' });
+    }
+    let user;
+    if (role === "SchoolAdmin") {
+      // Find the user in your database based on the email
+     user = await mySchool.findOne({ email });
+    } else if (role === "Teacher") {
+      // Find the user in your database based on the email
+    user = await Teacher.findOne({ email });
+    } else{
+      return res.status(400).json({ message: 'Invalid role.' });
+    }
     // Find the user in your database based on the email
-    const user = await mySchool.findOne({ email });
+    // const user = await mySchool.findOne({ email });
 
     if (!user) {
       return res.status(401).json({ message: 'Invalid email.' });
     }
 
+    const { name } = user;
     // Send the user's name (or any other relevant information) in the response
-    res.status(200).json({ message: 'Email verified.', name: user.name, email: user.email });
+    res.status(200).json({ message: 'Email verified.', name: name, email: email });
   } catch (error) {
     console.error('Error during email verification:', error);
     res.status(500).json({ message: 'An error occurred during email verification.' });
@@ -43,35 +58,71 @@ export const verifyEmail = async (req: express.Request, res: express.Response) =
 // Step 2 - Confirm Password
 export const confirmPassword = async (req: express.Request, res: express.Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
-    // Find the user in your database based on the email
-    const user = await mySchool.findOne({ email });
-
-    if (!user) {
+    if (!role) {
+      return res.status(401).json({ message: 'Invalid role.' });
+    }
+    let user;
+    let userObject: any = {};
+    if (role === "SchoolAdmin") {
+      // Find the user in your database based on the email
+     user = await mySchool.findOne({ email });
+     if (!user) {
       return res.status(401).json({ message: 'Invalid email.' });
     }
 
-    // Check if the password matches
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Invalid password.' });
     }
 
+    userObject = {
+      schoolId: user._id,
+      email: user.email,
+      name: user.name,
+      address: user.address,
+      phoneNumber: user.phoneNumber,
+      city: user.city,
+      state: user.state,
+      role: role,
+      category: user.school_category,
+    };
+    } else if (role === "Teacher") {
+      // Find the user in your database based on the email
+    user = await Teacher.findOne({ email }).populate('teacherClass');
+
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid email.' });
+    }
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Invalid password.' });
+    }
+
+    userObject = {
+      schoolId: user._id,
+      email: user.email,
+      name: user.name,
+      address: user.address,
+      phoneNumber: user.phoneNumber,
+      staffId: user.staffId,
+      teacherClass: user.teacherClass,
+      gender: user.gender,
+      lastName: user.lastName,
+      profilePictureUrl: user.profilePictureUrl
+    };
+
+    } else{
+      return res.status(400).json({ message: 'Invalid role.' });
+    }
+    
     // Generate a JWT token
     const token = jwt.sign(
-      {
-        schoolId: user._id,
-        email: user.email,
-        name: user.name,
-        address: user.address,
-        phoneNumber: user.phoneNumber,
-        city: user.city,
-        state: user.state,
-        role: user.role,
-        category: user.school_category,
-      },
+      userObject
+      ,
       "mongodb//sunday:ajibolason@sund",
       {
         expiresIn: '1h', // Token expiration time

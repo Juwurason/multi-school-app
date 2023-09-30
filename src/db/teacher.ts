@@ -8,6 +8,7 @@ export interface ITeacher extends Document {
   phoneNumber: string;
   email: string;
   gender: string;
+  password: string;
   teacherClass: Schema.Types.ObjectId;
   staffId: string;
   school: Schema.Types.ObjectId; 
@@ -27,6 +28,10 @@ const teacherSchema: Schema = new Schema<ITeacher>({
   school: {
     type: Schema.Types.ObjectId,
     ref: 'School', // Reference to the School model
+    required: true,
+  },
+  password: {
+    type: String,
     required: true,
   },
   lastName: String,

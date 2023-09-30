@@ -8,6 +8,8 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
 import {Storage, Bucket_url} from '../config/firebase';
+import bcrypt from 'bcrypt'
+import axios from 'axios';
 
 function generateStaffId(schoolShortName: string): string {
   return `${schoolShortName}-${shortid.generate()}`;
@@ -34,7 +36,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       return res.status(400).json({ error: 'Email already exists' });
     }
 
-    
+
 
     let fileUrl: string | undefined;
 
@@ -58,7 +60,17 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
     if (!schoolClass) {
       return res.status(404).json({ error: 'School class not found' });
     }
+      
+    const password = `${name.toLowerCase()}123`;
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const response = await axios.post('https://techxmail.onrender.com/sendmail', {
+       name: name,
+       mail: email,
+       text: `Email: ${email} \n Password: ${password}`,
+       subject: "Your Login Details"
+      });
     // Create a new teacher with or without the profile picture URL
     const teacherData: any = {
       name,
@@ -67,6 +79,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       phoneNumber,
       email,
       gender,
+      password: hashedPassword,
       teacherClass: teacherClass, // Store the teacherClassId
       school: school._id,
       staffId: generateStaffId(schoolShortName),
