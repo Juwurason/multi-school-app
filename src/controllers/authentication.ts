@@ -86,7 +86,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       phoneNumber: user.phoneNumber,
       city: user.city,
       state: user.state,
-      role: role,
+      role: user.role,
       category: user.school_category,
     };
     } else if (role === "Teacher") {
@@ -111,6 +111,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       staffId: user.staffId,
       teacherClass: user.teacherClass,
       gender: user.gender,
+      role: user.role,
       lastName: user.lastName,
       profilePictureUrl: user.profilePictureUrl
     };

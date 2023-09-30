@@ -8,7 +8,6 @@ export const subject: express.RequestHandler = async (req: Request, res: Respons
     try {
       const { subjectNames } = req.body;
       const { schoolId } = req.params;
-        console.log(subject);
         
         
       const school: ISchool | null = await mySchool.findById(schoolId);

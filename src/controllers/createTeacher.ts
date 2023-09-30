@@ -82,6 +82,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       password: hashedPassword,
       teacherClass: teacherClass, // Store the teacherClassId
       school: school._id,
+      role: "Teacher",
       staffId: generateStaffId(schoolShortName),
     };
 
@@ -111,7 +112,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
 export const updateTeacherById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, lastName, address, phoneNumber, gender, teacherClass } = req.body;
+    const { name, lastName, address, phoneNumber, gender, role, teacherClass } = req.body;
 
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
     if (!isValidObjectId(id)) {
@@ -167,6 +168,7 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
     existingTeacher.address = address;
     existingTeacher.phoneNumber = phoneNumber;
     existingTeacher.gender = gender;
+    existingTeacher.role = role;
     existingTeacher.teacherClass = teacherClass;
 
     // Save the updated teacher to the database
