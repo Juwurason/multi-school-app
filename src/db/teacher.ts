@@ -14,6 +14,9 @@ export interface ITeacher extends Document {
   staffId: string;
   school: Schema.Types.ObjectId; 
   profilePictureUrl?: string;
+  isEmailVerified: boolean; // Field to track email verification status
+  otp?: string; // Field to store OTP (optional, as it's generated)
+  otpExpiration?: Date; // Field to store OTP expiration time (optional)
 }
 
 const teacherSchema: Schema = new Schema<ITeacher>({
@@ -50,6 +53,12 @@ const teacherSchema: Schema = new Schema<ITeacher>({
     required: true,
   },
   profilePictureUrl: String,
+  isEmailVerified: {
+    type: Boolean,
+    default: false, // New teachers are not verified by default
+  },
+  otp: String, // Field to store OTP (optional)
+  otpExpiration: Date, // Field to store OTP expiration time (optional)
 }, {
   timestamps: true,
 });

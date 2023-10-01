@@ -2,6 +2,7 @@ import axios from 'axios';
 import mySchool, { ISchool } from '../db/myschools';
 import express, { Request, Response } from 'express';
 import moment from 'moment'
+import Teacher from '../db/teacher';
 
 export async function sendVerificationEmail(email: string, otp: string): Promise<void> {
   try {
@@ -76,7 +77,7 @@ export const resendOTP = async (req: Request, res: Response) => {
     const { email } = req.body;
 
     // Find the user in your database based on the email (assuming you have a User model)
-    const user = await mySchool.findOne({ email });
+    const user = await mySchool.findOne({ email }) || await Teacher.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found.' });
