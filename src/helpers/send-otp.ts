@@ -70,79 +70,37 @@ const generateOTP = (): string => {
   return otp;
 };
 
-interface User {
-  email: string;
-  otp: string;
-  otpExpiration: Date;
-}
 
-const users: { [key: string]: User } = {}; // Simulated database for storing users and their OTPs
-const fetchUsersFromDatabase = async () => {
+export const resendOTP = async (req: Request, res: Response) => {
   try {
-    // Fetch teacher data from the database
-    const school: ISchool[] = await mySchool.find();
+    const { email } = req.body;
 
-    // Populate the users object using teacher emails as keys
-    school.forEach((school: ISchool) => {
-      // Generate an initial OTP for each school (optional)
-      const initialOTP = generateOTP(); // Assuming you have a generateOTP function
+    // Find the user in your database based on the email (assuming you have a User model)
+    const user = await mySchool.findOne({ email });
 
-      // Set the OTP expiration time (e.g., 10 minutes from now)
-      const otpExpiration = new Date();
-      otpExpiration.setMinutes(otpExpiration.getMinutes() + 10);
-
-      // Add the school to the users object
-      users[school.email] = {
-        email: school.email,
-        otp: initialOTP, // You can use the initial OTP or generate a new one here
-        otpExpiration,
-      };
-
-      // Optionally, send the initial OTP to the school's email
-      // sendVerificationEmail(school.email, initialOTP);
-    });
-
-    // console.log('Users fetched and stored in the users object:', users);
-  } catch (error) {
-    console.error('Error fetching users:', error);
-  }
-};
-
-// Example usage: Fetch users from the database and populate the users object
-fetchUsersFromDatabase();
-
-export const resendOTP = (req: Request, res: Response) => {
-  const { email } = req.body;
-
-  // Check if the user exists in your database (simulated by users object)
-  if (users[email]) {
-    const { otp, otpExpiration } = users[email];
-
-    // Check if the existing OTP is expired
-    if (moment()>(moment(otpExpiration))) {
-      // Generate a new OTP and update the expiration time
-      const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
-      const newOTPExpiration = moment().add(5, 'minutes'); // Set the expiration time (5 minutes in this example)
-
-      // Update user's OTP and OTP expiration in the database
-      users[email].otp = newOTP;
-      users[email].otpExpiration = newOTPExpiration.toDate();
-
-      // Send the new OTP via email
-      sendVerificationEmail(email, newOTP);
-
-      return res.status(200).json({ message: 'New OTP sent successfully.' });
-    } else {
-      // OTP is still valid, resend the existing OTP
-      sendVerificationEmail(email, otp);
-
-      return res.status(200).json({ message: 'Existing OTP resent successfully.' });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
     }
-  } else {
-    // User not found in the database
-    return res.status(404).json({ message: 'User not found.' });
+
+    // Generate a new OTP and update the expiration time
+    const newOTP = Math.floor(100000 + Math.random() * 900000).toString();
+    const newOTPExpiration = moment().add(5, 'minutes'); // Set the expiration time (5 minutes in this example)
+
+    // Update user's OTP and OTP expiration in the database
+    user.otp = newOTP;
+    user.otpExpiration = newOTPExpiration.toDate();
+    await user.save();
+
+    // Send the new OTP via email
+    await sendVerificationEmail(email, newOTP);
+
+    return res.status(200).json({ message: 'New OTP sent successfully.' });
+  } catch (error) {
+    console.error('Error during OTP resend:', error);
+    return res.status(500).json({ message: 'An error occurred while resending OTP.' });
   }
 };
+
 
 // export async function getOTP(Email) {
 //   try {
