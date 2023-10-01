@@ -107,6 +107,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
 
     userObject = {
       schoolId,
+      id: user._id,
       email: user.email,
       name: user.name,
       address: user.address,
