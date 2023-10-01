@@ -1,8 +1,7 @@
 
 
 import { getUserByEmail, createUser } from '../db/users';
-
-import { random, authentication } from '../helpers';
+import { sendVerificationEmail } from '../helpers/send-otp';
 
 import express, { Request, Response } from 'express';
 import mySchool, { ISchool } from '../db/myschools'; // Import your School model
@@ -13,6 +12,8 @@ import { serialize } from 'cookie';
 import dotenv from 'dotenv';
 dotenv.config();
 import { isValidObjectId } from 'mongoose'
+import moment from 'moment-timezone';
+import 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
 import { admin } from '../firebaseConfig';
 import * as path from 'path';
@@ -102,8 +103,10 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       return res.status(401).json({ message: 'Invalid password.' });
     }
 
+    const schoolId = user.school;
+
     userObject = {
-      schoolId: user._id,
+      schoolId,
       email: user.email,
       name: user.name,
       address: user.address,
@@ -177,9 +180,13 @@ export const register = async (req: Request, res: Response) => {
 
     //    // Generate OTP
     // const otp = generateOTP();
-
+      let DateCreat = new Date()
+        let timeZone = 'Africa/Lagos';
+        let datetime = moment(DateCreat).tz(timeZone).format('YYYY-MM-DD HH:mm:ss');
+        const expiry = new Date(DateCreat.getTime() + 10 * 60 * 1000);
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
     // // Send OTP email
-    // await sendOtpEmail(email, otp);
+        await sendVerificationEmail(email, otp);
   
       // Hash the password before storing it in the database
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -193,6 +200,8 @@ export const register = async (req: Request, res: Response) => {
         phoneNumber,
         city,
         state,
+        otp,
+        otpExpiration: expiry,
         role,
         school_category,
       });
@@ -203,7 +212,8 @@ export const register = async (req: Request, res: Response) => {
       const token = jwt.sign(
         { schoolId: newSchool._id, email: newSchool.email, name: newSchool.name,
         address: newSchool.address, phoneNuber: newSchool.phoneNumber, city: newSchool.city,
-        state: newSchool.state, role: newSchool.role, category: newSchool.school_category
+        state: newSchool.state, role: newSchool.role, category: newSchool.school_category,
+        emailVerify: newSchool.isEmailVerified
         },
         "mongodb//sunday:ajibolason@sund", // Replace with your actual secret key
         { expiresIn: '1h' } // Set an expiration time for the token
