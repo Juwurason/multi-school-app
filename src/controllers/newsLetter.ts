@@ -1,15 +1,18 @@
 import Letter, { ILetter } from '../db/newsletter'
 import express, { Request, Response } from 'express';
 import mySchool, { ISchool } from '../db/myschools';
-import { admin } from '../firebaseConfig';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import {Storage, Bucket_url} from '../config/firebase';
+import SchoolClass from '../db/schoolClass';
+import Student from '../db/student';
+import axios from 'axios';
 
 export const newsLetter: express.RequestHandler = async (req: Request, res: Response) => {
 
     try {
-        const { message } = req.body
+        const { subject, content } = req.body
     const { schoolId } = req.params;
 
     // Check if the school with the provided schoolId exists
@@ -23,29 +26,22 @@ export const newsLetter: express.RequestHandler = async (req: Request, res: Resp
 
     // Check if a news Letter is provided
     if (req.file) {
-        // Upload the news Letter to Firebase Storage
-        const file = req.file;
-  
-        // Generate a unique filename for the news Letter
-        const fileName = `${uuidv4()}${path.extname(file.originalname)}`;
-        const bucket = admin.storage().bucket();
-  
-        const fileUpload = bucket.file(fileName);
-        const fileBuffer = file.buffer;
-  
-        // Upload the file to Firebase Storage
-        await fileUpload.save(fileBuffer, {
-          metadata: {
-            contentType: file.mimetype,
-          },
-        });
-  
-        // Get the news Letter URL
-        fileUrl = `https://storage.googleapis.com/${bucket.name}/${fileName}`;
-      }
+      const file = req.file;
+      const fileName = `${uuidv4()}${path.extname(file.originalname)}`
+      const folderName = 'My-School-app'
+      const bucketRef = ref(Storage, Bucket_url);
+      const fileRef = ref(bucketRef, `${folderName}/${fileName}`);
+      await uploadBytes(fileRef, req.file.buffer, {
+        contentType: req.file.mimetype,
+      });
+
+      // Get the profile picture URL
+      fileUrl = await getDownloadURL(fileRef);
+    }
 
       const newsLetterData: any = {
-        message,
+        subject,
+        content,
         school: school._id,
       };
 
@@ -87,3 +83,79 @@ export const getLetterBySchoolId: express.RequestHandler = async (req, res) => {
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+  export async function sendEmail(email: string, subject: string, content: string, fileUrl?: string): Promise<void> {
+    try {
+  
+      const name: string = 'MySchoolApp';
+
+      const emailContent = fileUrl
+            ? `<p>${content}</p><img src="${fileUrl}" alt="Image"/>`
+            : `<p>${content}</p>`;
+  
+      const response = await axios.post('https://mail.onrender.com/sendmail', {
+        name: name,
+        mail: email,
+        subject: subject,
+        html: emailContent
+      });
+  
+      if (response.status === 200) {
+        console.log('Message sent successfully');
+      } else {
+        console.error('Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  }
+
+  export const sendNewsLetter: express.RequestHandler = async (req, res) => {
+    try {
+        const { subject, content } = req.body;
+        const { classId } = req.params;
+
+        // Find class details
+        const targetClass = await SchoolClass.findById(classId);
+
+        if (!targetClass) {
+            return res.status(404).json({ error: 'Class not found' });
+        }
+
+        let fileUrl: string | undefined;
+
+        // Check if a newsletter file is provided
+        if (req.file) {
+            const file = req.file;
+            const fileName = `${uuidv4()}${path.extname(file.originalname)}`
+            const folderName = 'My-School-app'
+            const bucketRef = ref(Storage, Bucket_url);
+            const fileRef = ref(bucketRef, `${folderName}/${fileName}`);
+            await uploadBytes(fileRef, req.file.buffer, {
+                contentType: req.file.mimetype,
+            });
+
+            // Get the newsletter file URL
+            fileUrl = await getDownloadURL(fileRef);
+        }
+
+        const students = await Student.find({ class: classId })
+
+        // Sending newsletters to parents
+        students.forEach(async (student) => {
+            try {
+                // Assuming you have a sendEmail function to send emails
+                await sendEmail(student.email, subject, content, fileUrl);
+            } catch (error) {
+                console.error(`Error sending newsletter to ${student.email}:`, error);
+            }
+        });
+
+        return res.status(200).json({ message: 'Newsletters sent successfully' });
+    } catch (error) {
+        console.error('Error sending newsletters:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+

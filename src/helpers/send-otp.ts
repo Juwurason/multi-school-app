@@ -103,38 +103,3 @@ export const resendOTP = async (req: Request, res: Response) => {
 };
 
 
-// export async function getOTP(Email) {
-//   try {
-//     
-//     const { Token, TokenExpired } = rows[0];
-//       let token = Token
-//     let now = new Date();
-//     const expiry = new Date(TokenExpired);
-//     console.log(now, expiry);
-//     if (now > expiry) {
-//       await resendOTP(Email)
-//       return { error: 'OTP has expired. A new OTP has been sent to your registered email address.' };
-//     } else{
-//       await sendVerificationEmail(Email, token)
-//       return token;
-//     }
-    
-//   } catch (error) {
-//     console.error('Error while getting OTP:', error);
-//     throw error;
-//   }
-// }
-
-
-// app.post("/resend-otp", async (req, res) =>{
-//     const {Email} = req.body
-//     try {
-//           const  token = await getOTP(Email)
-//        if (token.error) {
-//         return res.status(400).json({ error: token.error });
-//        }
-//        res.json({ message: 'OTP resend successfully', token: token });
-//     } catch (error) {
-//       res.status(500).json({ message: 'Error resending OTP' });
-//     }
-// })

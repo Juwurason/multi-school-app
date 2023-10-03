@@ -5,7 +5,8 @@ export interface ILetter extends Document {
   
   school: Schema.Types.ObjectId; 
   newsLetterUrl?: string;
-  message?: string;
+  subject?: string;
+  content?: string;
 }
 
 const newsLetterSchema: Schema = new Schema<ILetter>({
@@ -15,7 +16,8 @@ const newsLetterSchema: Schema = new Schema<ILetter>({
     required: true,
   },
   newsLetterUrl: String,
-  message: String,
+  subject: String,
+  content: String,
 }, {
   timestamps: true,
 });
