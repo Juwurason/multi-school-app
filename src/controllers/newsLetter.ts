@@ -158,4 +158,52 @@ export const getLetterBySchoolId: express.RequestHandler = async (req, res) => {
     }
 };
 
+export const sendNewsLetterToAll: express.RequestHandler = async (req, res) => {
+  try {
+      const { subject, content } = req.body;
+      const { schoolId } = req.params;
+      // Retrieve all classes in the school
+      const allClasses = await SchoolClass.find({ school: schoolId });
+
+      let fileUrl: string | undefined;
+
+      // Check if a newsletter file is provided
+      if (req.file) {
+          const file = req.file;
+          const fileName = `${uuidv4()}${path.extname(file.originalname)}`
+          const folderName = 'My-School-app'
+          const bucketRef = ref(Storage, Bucket_url);
+          const fileRef = ref(bucketRef, `${folderName}/${fileName}`);
+          await uploadBytes(fileRef, req.file.buffer, {
+              contentType: req.file.mimetype,
+          });
+
+          // Get the newsletter file URL
+          fileUrl = await getDownloadURL(fileRef);
+      }
+
+      // Iterate through each class
+      for (const targetClass of allClasses) {
+          const classId = targetClass._id;
+
+          // Find students in the current class
+          const students = await Student.find({ class: classId });
+
+          // Sending newsletters to parents of students in this class
+          students.forEach(async (student) => {
+              try {
+                  // Assuming you have a sendEmail function to send emails
+                  await sendEmail(student.email, subject, content, fileUrl);
+              } catch (error) {
+                  console.error(`Error sending newsletter to ${student.email}:`, error);
+              }
+          });
+      }
+
+      return res.status(200).json({ message: 'Newsletters sent successfully to all classes\' parents.' });
+  } catch (error) {
+      console.error('Error sending newsletters:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 

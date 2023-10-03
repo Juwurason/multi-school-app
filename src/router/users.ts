@@ -4,7 +4,7 @@ import { createTeacher, updateTeacherById } from '../controllers/createTeacher';
 import passport from '../passport-config';
 import multer from 'multer';
 import { getSchoolById, updateSchoolById } from '../controllers/authentication';
-import { newsLetter, getLetterBySchoolId } from '../controllers/newsLetter'
+import { newsLetter, getLetterBySchoolId, sendNewsLetter, sendNewsLetterToAll } from '../controllers/newsLetter'
 import { createStudent, deleteStudentById, getStudentsById, getStudentsBySchoolId, updateStudentById } from '../controllers/student';
 import { deleteSchoolClassById, getSchoolClassById, getSchoolClassBySchoolId, schoolClass } from '../controllers/schoolClass';
 import { deleteSubjectById, getSubjectById, getSubjectBySchoolId, subject } from '../controllers/subject';
@@ -35,6 +35,8 @@ export default (router: express.Router) => {
     router.post('/add_subjects/:schoolId/subjects', passport.authenticate('jwt', { session: false }), subject);
     router.post('/add_student/:schoolId/student', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), createStudent);
     router.post('/news_Letter/:schoolId/school_news', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), newsLetter);
+    router.post('/send-newsletter/:classId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetter);
+    router.post('/send-newsletter_to_all/:schoolId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetterToAll);
     router.post('/update_teacher/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateTeacherById);
     router.post('/update_student/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateStudentById);
     router.post('/update_school/:id', upload.single('schoolLogo'), passport.authenticate('jwt', { session: false }), updateSchoolById);
