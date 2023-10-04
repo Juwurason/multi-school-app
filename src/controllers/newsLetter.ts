@@ -164,7 +164,7 @@ export const sendNewsLetterToAll: express.RequestHandler = async (req, res) => {
       const { schoolId } = req.params;
       // Retrieve all classes in the school
       const allClasses = await SchoolClass.find({ school: schoolId });
-
+      
       let fileUrl: string | undefined;
 
       // Check if a newsletter file is provided

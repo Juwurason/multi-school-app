@@ -12,6 +12,29 @@ function generateId() {
     return `STF-${shortid.generate()}`;
   }
 
+
+async function generateStudentId(schoolId: string): Promise<string> {
+  try {
+    const lastStudent = await Student.findOne({ schoolId }).sort({ studentId: -1 });
+
+    let newStudentNumber = 1; // Default starting number
+    if (lastStudent) {
+      // If there is a last student, increment the number
+      const lastStudentNumber: number = parseInt(lastStudent.studentId, 10);
+      newStudentNumber = lastStudentNumber + 1;
+    }
+
+    const paddedNumber: string = String(newStudentNumber).padStart(3, '0'); // Pad with leading zeros
+    const newStudentId: string = paddedNumber;
+
+    return newStudentId;
+  } catch (error) {
+    throw new Error(`Error generating student ID: ${error.message}`);
+  }
+}
+
+  
+
   export const createStudent: express.RequestHandler = async (req: Request, res: Response) => {
     try {
       const { name, lastName, address, dateOfBirth, phoneNumber, email, gender, studentClass, guardainsFullName } = req.body;
@@ -50,9 +73,9 @@ function generateId() {
       }
   
   
-      const studentId: string = generateId();
+      const studentId: string = await generateStudentId(schoolId);
   
-      // Create a new teacher with or without the profile picture URL
+      // Create a new student with or without the profile picture URL
       const studentData: any = {
         name,
         lastName,
@@ -71,10 +94,10 @@ function generateId() {
         studentData.profilePictureUrl = fileUrl;
       }
   
-      // Create the teacher object
+      // Create the student object
       const student = new Student(studentData);
   
-      // Save the teacher to the database
+      // Save the student to the database
       await student.save();
   
       return res.status(201).json({ message: 'Student created successfully', student });
