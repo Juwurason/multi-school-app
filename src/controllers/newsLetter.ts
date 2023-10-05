@@ -13,7 +13,7 @@ export const newsLetter: express.RequestHandler = async (req: Request, res: Resp
 
     try {
         const { subject, content } = req.body
-    const { schoolId } = req.params;
+        const { schoolId } = req.params;
 
     // Check if the school with the provided schoolId exists
     const school: ISchool | null = await mySchool.findById(schoolId);
@@ -139,7 +139,7 @@ export const getLetterBySchoolId: express.RequestHandler = async (req, res) => {
             fileUrl = await getDownloadURL(fileRef);
         }
 
-        const students = await Student.find({ class: classId })
+        const students = await Student.find({ studentClass: classId })
 
         // Sending newsletters to parents
         students.forEach(async (student) => {
@@ -187,7 +187,7 @@ export const sendNewsLetterToAll: express.RequestHandler = async (req, res) => {
           const classId = targetClass._id;
 
           // Find students in the current class
-          const students = await Student.find({ class: classId });
+          const students = await Student.find({ studentClass: classId });
 
           // Sending newsletters to parents of students in this class
           students.forEach(async (student) => {

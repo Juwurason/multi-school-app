@@ -5,9 +5,9 @@ import passport from '../passport-config';
 import multer from 'multer';
 import { getSchoolById, updateSchoolById } from '../controllers/authentication';
 import { newsLetter, getLetterBySchoolId, sendNewsLetter, sendNewsLetterToAll } from '../controllers/newsLetter'
-import { createStudent, deleteStudentById, getStudentsById, getStudentsBySchoolId, updateStudentById } from '../controllers/student';
+import { createStudent, deleteStudentById, getStudentsByClassId, getStudentsById, getStudentsBySchoolId, updateStudentById } from '../controllers/student';
 import { deleteSchoolClassById, getSchoolClassById, getSchoolClassBySchoolId, schoolClass } from '../controllers/schoolClass';
-import { deleteSubjectById, getSubjectById, getSubjectBySchoolId, subject } from '../controllers/subject';
+import { deleteSubjectById, getSubjectByClassId, getSubjectById, getSubjectBySchoolId, subject } from '../controllers/subject';
 // Create a Multer storage for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -24,7 +24,9 @@ export default (router: express.Router) => {
     router.get('/get_teacher_byId/:id', passport.authenticate('jwt', { session: false }), getTeachersById);
     router.get('/get_class_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolClassById);
     router.get('/get_subject_byId/:id', passport.authenticate('jwt', { session: false }), getSubjectById);
+    router.get('/get_subject_byClassId/:classId/:schoolId', passport.authenticate('jwt', { session: false }), getSubjectByClassId);
     router.get('/get_student_byId/:id', passport.authenticate('jwt', { session: false }), getStudentsById);
+    router.get('/get_student_byClassId/:classId', passport.authenticate('jwt', { session: false }), getStudentsByClassId);
     router.get('/get_school_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolById);
     router.post('/delete_teacher/:id', passport.authenticate('jwt', { session: false }), deleteTeacherById);
     router.post('/delete_subject/:id', passport.authenticate('jwt', { session: false }), deleteSubjectById);

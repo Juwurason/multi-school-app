@@ -4,6 +4,7 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 export interface ISubject extends Document {
   
   school: Schema.Types.ObjectId; 
+  schoolClass?: Schema.Types.ObjectId | null; // Optional reference to the SchoolClass model
   subject?: string;
  
 }
@@ -14,7 +15,15 @@ const subject: Schema = new Schema<ISubject>({
     ref: 'School', // Reference to the School model
     required: true,
   },
-  subject: String,
+  schoolClass: {
+    type: Schema.Types.ObjectId,
+    ref: 'SchoolClass', // Reference to the SchoolClass model
+    default: null, // Default value is null, indicating it's applicable to all classes
+  },
+  subject: {
+    type: String,
+    required: true,
+  },
 }, {
   timestamps: true,
 });

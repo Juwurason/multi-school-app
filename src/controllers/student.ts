@@ -7,6 +7,7 @@ import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
 import {Storage, Bucket_url} from '../config/firebase';
+import SchoolClass from '../db/schoolClass';
 
 function generateId() {
     return `STF-${shortid.generate()}`;
@@ -219,6 +220,31 @@ async function generateStudentId(schoolId: string): Promise<string> {
       return res.status(200).json(student);
     } catch (error) {
       console.error('Error fetching student by schoolId:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  export const getStudentsByClassId: express.RequestHandler = async (req, res) => {
+    try {
+
+      const { classId } = req.params;
+      
+      // Find class details
+      const targetClass = await SchoolClass.findById(classId);
+      
+      if (!targetClass) {
+        return res.status(404).json({ error: 'Class not found' });
+    }
+
+      const students = await Student.find({ studentClass: classId })
+
+     if (!students) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
+
+      return res.status(200).json(students);
+    } catch (error) {
+      console.error('Error fetching student by classId:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
