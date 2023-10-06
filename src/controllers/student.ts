@@ -211,7 +211,7 @@ async function generateStudentId(schoolId: string): Promise<string> {
         return res.status(400).json({ error: 'Invalid student ID' });
       }
   
-      const student: IStudent | null = await Student.findById(id);
+      const student: IStudent | null = await Student.findById(id).populate('studentClass');
   
       if (!student) {
         return res.status(404).json({ error: 'Student not found' });
@@ -219,7 +219,7 @@ async function generateStudentId(schoolId: string): Promise<string> {
   
       return res.status(200).json(student);
     } catch (error) {
-      console.error('Error fetching student by schoolId:', error);
+      console.error('Error fetching student by Id:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   };

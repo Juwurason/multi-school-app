@@ -9,7 +9,7 @@ export interface IStudent extends Document {
   phoneNumber: string;
   email: string;
   gender: string;
-  studentClass: string;
+  studentClass: Schema.Types.ObjectId;
   studentId: string;
   guardainsFullName: string;
   school: Schema.Types.ObjectId; 
@@ -36,7 +36,11 @@ const studentSchema: Schema = new Schema<IStudent>({
   phoneNumber: String,
   gender: String,
   guardainsFullName: String,
-  studentClass: String,
+  // studentClass: String,
+  studentClass: {
+    type: Schema.Types.ObjectId,
+    ref: 'SchoolClass', // Reference to the SchoolClass model
+  },
   studentId: {
     type: String,
     unique: true,
