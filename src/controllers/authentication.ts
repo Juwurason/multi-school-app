@@ -79,6 +79,10 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       return res.status(401).json({ message: 'Invalid password.' });
     }
 
+    if (user.isEmailVerified === false) {
+      return res.status(403).json({message: 'Email not verified'})
+    }
+
     userObject = {
       schoolId: user._id,
       email: user.email,
@@ -101,6 +105,10 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
 
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Invalid password.' });
+    }
+
+    if (user.isEmailVerified === false) {
+      return res.status(403).json({message: 'Email not verified'})
     }
 
     const schoolId = user.school;
@@ -143,10 +151,6 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
 };
 
 
-  // function generateOTP(): string {
-  //   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  //   return otp;
-  // }
   
 export const register = async (req: Request, res: Response) => {
     try {
