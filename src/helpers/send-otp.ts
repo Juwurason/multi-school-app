@@ -37,18 +37,18 @@ export const verifyOTP: express.RequestHandler = async (req: Request, res: Respo
     const user = await mySchool.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     // Check if the provided OTP matches the stored OTP
     if (user.otp !== otp) {
-      return res.status(401).json({ error: 'Invalid OTP' });
+      return res.status(401).json({ message: 'Invalid OTP' });
     }
 
     // Check if the OTP is expired (you can store an expiration timestamp in your model)
     const currentTimestamp = Date.now();
     if (user.otpExpiration && currentTimestamp > user.otpExpiration.getTime()) {
-      return res.status(401).json({ error: 'OTP has expired' });
+      return res.status(401).json({ message: 'OTP has expired' });
     }
     user.isEmailVerified = true
     // If OTP is valid and not expired, mark email as verified or perform necessary actions
@@ -61,7 +61,7 @@ export const verifyOTP: express.RequestHandler = async (req: Request, res: Respo
     return res.status(200).json({ message: 'OTP verified successfully' });
   } catch (error) {
     console.error('Error verifying OTP:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ message: 'Internal server error' });
   }
 };
 
