@@ -16,11 +16,11 @@ const subject: Schema = new Schema<ISubject>({
     ref: 'School', // Reference to the School model
     required: true,
   },
-  schoolClass: {
+  schoolClass: [{
     type: Schema.Types.Mixed,
     ref: 'SchoolClass', // Reference to the SchoolClass model
     default: null, // Default value is null, indicating it's applicable to all classes
-  },
+  }],
   subject: {
     type: String,
     required: true,

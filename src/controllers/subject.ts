@@ -186,7 +186,7 @@ export const subject: express.RequestHandler = async (req: Request, res: Respons
                 { schoolClass: { $exists: false } },
                 { schoolClass: classId }
             ]
-        });
+        }).populate('schoolClass');
 
         return res.status(200).json({ subjects });
     } catch (error) {
@@ -205,7 +205,7 @@ export const subject: express.RequestHandler = async (req: Request, res: Respons
         return res.status(400).json({ error: 'Invalid class ID' });
       }
   
-      const subject: ISubject | null = await Subject.findById(id);
+      const subject: ISubject | null = await Subject.findById(id).populate('schoolClass');
   
       if (!subject) {
         return res.status(404).json({ error: 'Subject not found' });
