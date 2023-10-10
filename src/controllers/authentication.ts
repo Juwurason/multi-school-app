@@ -49,7 +49,7 @@ export const verifyEmail = async (req: express.Request, res: express.Response) =
 
     const { name } = user;
     // Send the user's name (or any other relevant information) in the response
-    res.status(200).json({ message: 'Email verified.', name: name, email: email });
+    res.status(200).json({ message: 'Email confirmed.', name: name, email: email });
   } catch (error) {
     console.error('Error during email verification:', error);
     res.status(500).json({ message: 'An error occurred during email verification.' });

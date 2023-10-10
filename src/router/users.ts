@@ -8,6 +8,8 @@ import { newsLetter, getLetterBySchoolId, sendNewsLetter, sendNewsLetterToAll } 
 import { createStudent, deleteStudentById, getStudentsByClassId, getStudentsById, getStudentsBySchoolId, updateStudentById } from '../controllers/student';
 import { deleteSchoolClassById, getSchoolClassById, getSchoolClassBySchoolId, schoolClass } from '../controllers/schoolClass';
 import { deleteSubjectById, getSubjectByClassId, getSubjectById, getSubjectBySchoolId, subject } from '../controllers/subject';
+import { getScoreBySchoolId, score } from '../controllers/score';
+import { createGradeFormat, getGradeFormatsBySchoolId } from '../controllers/grade';
 // Create a Multer storage for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -22,6 +24,8 @@ export default (router: express.Router) => {
     router.get('/get_all_students-by_school_Id/:schoolId/students', passport.authenticate('jwt', { session: false }), getStudentsBySchoolId);
     router.get('/get_all_news_Letter_by_school_Id/:schoolId/newsLetter', passport.authenticate('jwt', { session: false }), getLetterBySchoolId);
     router.get('/get_teacher_byId/:id', passport.authenticate('jwt', { session: false }), getTeachersById);
+    router.get('/get_grade/:schoolId', passport.authenticate('jwt', { session: false }), getGradeFormatsBySchoolId);
+    router.get('/get_score/:schoolId', passport.authenticate('jwt', { session: false }), getScoreBySchoolId);
     router.get('/get_class_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolClassById);
     router.get('/get_subject_byId/:id', passport.authenticate('jwt', { session: false }), getSubjectById);
     router.get('/get_subject_byClassId/:classId/:schoolId', getSubjectByClassId);
@@ -35,6 +39,8 @@ export default (router: express.Router) => {
     router.post('/add_teacher/:schoolId/teachers', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), createTeacher);
     router.post('/add_classes/:schoolId/classes', passport.authenticate('jwt', { session: false }), schoolClass);
     router.post('/add_subjects/:schoolId/subjects', passport.authenticate('jwt', { session: false }), subject);
+    router.post('/add_score/:schoolId', passport.authenticate('jwt', { session: false }), score);
+    router.post('/add_grade/:schoolId', passport.authenticate('jwt', { session: false }), createGradeFormat);
     router.post('/add_student/:schoolId/student', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), createStudent);
     router.post('/news_Letter/:schoolId/school_news', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), newsLetter);
     router.post('/send-newsletter/:classId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetter);
