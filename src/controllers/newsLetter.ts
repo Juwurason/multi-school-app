@@ -74,7 +74,7 @@ export const getLetterBySchoolId: express.RequestHandler = async (req, res) => {
         return res.status(404).json({ error: 'School not found' });
       }
   
-      // Fetch teachers associated with the school
+      
       const newsLetter = await Letter.find({ school: school._id });
   
       return res.status(200).json(newsLetter);
