@@ -56,6 +56,14 @@ export const verifyEmail = async (req: express.Request, res: express.Response) =
   }
 };
 
+
+let DateCreat = new Date()
+        let timeZone = 'Africa/Lagos';
+        let datetime = moment(DateCreat).tz(timeZone).format('YYYY-MM-DD HH:mm:ss');
+        const expiry = new Date(DateCreat.getTime() + 10 * 60 * 1000);
+        let otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        let ot:any;
 // Step 2 - Confirm Password
 export const confirmPassword = async (req: express.Request, res: express.Response) => {
   try {
@@ -108,6 +116,9 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
     }
 
     if (user.isEmailVerified === false) {
+      user.otp = otp
+      await user.save()
+    await sendVerificationEmail(email, otp)
       return res.status(403).json({message: 'Email not verified'})
     }
 
@@ -124,6 +135,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       teacherClass: user.teacherClass,
       gender: user.gender,
       role: user.role,
+      otp: otp,
       lastName: user.lastName,
       profilePictureUrl: user.profilePictureUrl
     };
@@ -185,11 +197,7 @@ export const register = async (req: Request, res: Response) => {
 
     //    // Generate OTP
     // const otp = generateOTP();
-      let DateCreat = new Date()
-        let timeZone = 'Africa/Lagos';
-        let datetime = moment(DateCreat).tz(timeZone).format('YYYY-MM-DD HH:mm:ss');
-        const expiry = new Date(DateCreat.getTime() + 10 * 60 * 1000);
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      
     // // Send OTP email
         await sendVerificationEmail(email, otp);
   

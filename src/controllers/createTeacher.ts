@@ -30,7 +30,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
     const schoolShortName = school.name.substring(0, 3).toUpperCase();
 
     // Check if the email already exists in the database
-    const existingTeacher: ITeacher | null = await Teacher.findOne({ email });
+    const existingTeacher: ITeacher | null = await Teacher.findOne({ email }) || await mySchool.findOne({ email })
 
     if (existingTeacher) {
       return res.status(400).json({ error: 'Email already exists' });

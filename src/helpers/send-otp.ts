@@ -34,7 +34,7 @@ export const verifyOTP: express.RequestHandler = async (req: Request, res: Respo
     const { email, otp } = req.body;
 
     // Find the user by email
-    const user = await mySchool.findOne({ email });
+    const user = await mySchool.findOne({ email }) || await Teacher.findOne({ email });
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
