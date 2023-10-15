@@ -66,8 +66,7 @@ export const newsLetter: express.RequestHandler = async (req: Request, res: Resp
 
 export const updateNewsLetterById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-    // const { id } = req.params;
-    // const { name, lastName, address, phoneNumber, gender, role, teacherClass } = req.body;
+    
     const { subject, content } = req.body
         const { id } = req.params;
 
@@ -182,7 +181,7 @@ export const getLetterBySchoolId: express.RequestHandler = async (req, res) => {
 
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
     if (!isValidObjectId(id)) {
-      return res.status(400).json({ error: 'Invalid student ID' });
+      return res.status(400).json({ error: 'Invalid ID' });
     }
 
     // Find the letter by ID and delete it
