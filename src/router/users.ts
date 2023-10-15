@@ -4,7 +4,7 @@ import { createTeacher, updateTeacherById } from '../controllers/createTeacher';
 import passport from '../passport-config';
 import multer from 'multer';
 import { getSchoolById, updateSchoolById } from '../controllers/authentication';
-import { newsLetter, getLetterBySchoolId, sendNewsLetter, sendNewsLetterToAll } from '../controllers/newsLetter'
+import { newsLetter, getLetterBySchoolId, sendNewsLetter, sendNewsLetterToAll, updateNewsLetterById, deleteLetterById, getLetterById } from '../controllers/newsLetter'
 import { createStudent, deleteStudentById, getStudentsByClassId, getStudentsById, getStudentsBySchoolId, updateStudentById } from '../controllers/student';
 import { deleteSchoolClassById, getSchoolClassById, getSchoolClassBySchoolId, schoolClass } from '../controllers/schoolClass';
 import { deleteSubjectById, getSubjectByClassId, getSubjectById, getSubjectBySchoolId, subject } from '../controllers/subject';
@@ -28,7 +28,7 @@ export default (router: express.Router) => {
     router.get('/get_score/:schoolId', passport.authenticate('jwt', { session: false }), getScoreBySchoolId);
     router.get('/get_class_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolClassById);
     router.get('/get_subject_byId/:id', passport.authenticate('jwt', { session: false }), getSubjectById);
-    router.get('/get_subject_byClassId/:classId/:schoolId', getSubjectByClassId);
+    router.get('/get_subject_byClassId/:classId/:schoolId', passport.authenticate('jwt', { session: false }), getSubjectByClassId);
     router.get('/get_student_byId/:id', passport.authenticate('jwt', { session: false }), getStudentsById);
     router.get('/get_student_byClassId/:classId', passport.authenticate('jwt', { session: false }), getStudentsByClassId);
     router.get('/get_school_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolById);
@@ -43,6 +43,9 @@ export default (router: express.Router) => {
     router.post('/add_grade/:schoolId', passport.authenticate('jwt', { session: false }), createGradeFormat);
     router.post('/add_student/:schoolId/student', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), createStudent);
     router.post('/news_Letter/:schoolId/school_news', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), newsLetter);
+    router.post('/update_Letter/:id', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), updateNewsLetterById);
+    router.post('/delete_Letter/:id', passport.authenticate('jwt', { session: false }), deleteLetterById);
+    router.post('/get_Letter_details/:id', passport.authenticate('jwt', { session: false }), getLetterById);
     router.post('/send-newsletter/:classId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetter);
     router.post('/send-newsletter_to_all/:schoolId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetterToAll);
     router.post('/update_teacher/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateTeacherById);
