@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import GradeFormat, { IGradeFormat } from '../db/grade';
 import mySchool, { ISchool } from '../db/myschools';
+import { isValidObjectId } from 'mongoose';
 
 // export const createGradeFormat: express.RequestHandler = async (req: Request, res: Response) => {
 //   try {
@@ -76,4 +77,81 @@ export const getGradeFormatsBySchoolId: express.RequestHandler = async (req: Req
     console.error('Error fetching grade formats:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
+};
+
+export const getGradeFormatById: express.RequestHandler = async (req, res) => {
+  try {
+      const { id } = req.params;
+
+      // Check if the provided ID is valid (you may want to add more validation logic here)
+      if (!isValidObjectId(id)) {
+          return res.status(400).json({ error: 'Invalid grade format ID' });
+      }
+
+      // Find the grade format by ID
+      const gradeFormat = await GradeFormat.findById(id);
+
+      if (!gradeFormat) {
+          return res.status(404).json({ error: 'Grade format not found' });
+      }
+
+      return res.status(200).json({ gradeFormat });
+  } catch (error) {
+      console.error('Error fetching grade format by ID:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const updateGradeById: express.RequestHandler = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { grade, miniScore, maxScore } = req.body;
+
+        // Check if the provided ID is valid (you may want to add more validation logic here)
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ error: 'Invalid grade ID' });
+        }
+
+        // Find the grade format by ID and update it with the new data
+        const existingGrade = await GradeFormat.findById(id);
+
+        if (!existingGrade) {
+            return res.status(404).json({ error: 'Grade format not found' });
+        }
+
+        // Update the grade format fields with the new data
+        existingGrade.grade = grade;
+        existingGrade.miniScore = miniScore;
+        existingGrade.maxScore = maxScore;
+
+        await existingGrade.save(); // Save the updated grade format to the database
+
+        return res.status(200).json({ message: 'Grade format updated successfully', updatedGrade: existingGrade });
+    } catch (error) {
+        console.error('Error updating grade format by ID:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+};
+
+export const deleteGradeFormatById: express.RequestHandler = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Check if the provided ID is valid (you may want to add more validation logic here)
+        if (!isValidObjectId(id)) {
+            return res.status(400).json({ error: 'Invalid grade format ID' });
+        }
+
+        // Find the grade format by ID and delete it
+        const deletedGradeFormat = await GradeFormat.findByIdAndDelete(id);
+
+        if (!deletedGradeFormat) {
+            return res.status(404).json({ error: 'Grade format not found' });
+        }
+
+        return res.status(200).json({ message: 'Grade format deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting grade format by ID:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
 };

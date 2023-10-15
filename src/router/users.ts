@@ -9,7 +9,7 @@ import { createStudent, deleteStudentById, getStudentsByClassId, getStudentsById
 import { deleteSchoolClassById, getSchoolClassById, getSchoolClassBySchoolId, schoolClass } from '../controllers/schoolClass';
 import { deleteSubjectById, getSubjectByClassId, getSubjectById, getSubjectBySchoolId, subject } from '../controllers/subject';
 import { deleteScoreById, getScoreById, getScoreBySchoolId, score, updateScoreById } from '../controllers/score';
-import { createGradeFormat, getGradeFormatsBySchoolId } from '../controllers/grade';
+import { createGradeFormat, deleteGradeFormatById, getGradeFormatById, getGradeFormatsBySchoolId, updateGradeById } from '../controllers/grade';
 // Create a Multer storage for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -42,8 +42,11 @@ export default (router: express.Router) => {
     router.post('/add_score/:schoolId', passport.authenticate('jwt', { session: false }), score);
     router.post('/update_score/:id', passport.authenticate('jwt', { session: false }), updateScoreById);
     router.post('/delete_score/:id', passport.authenticate('jwt', { session: false }), deleteScoreById);
-    router.get('/get_score/:id', passport.authenticate('jwt', { session: false }), getScoreById);
+    router.get('/get_score_byId/:id', passport.authenticate('jwt', { session: false }), getScoreById);
     router.post('/add_grade/:schoolId', passport.authenticate('jwt', { session: false }), createGradeFormat);
+    router.post('/update_grade/:id', passport.authenticate('jwt', { session: false }), updateGradeById);
+    router.post('/delete_grade/:id', passport.authenticate('jwt', { session: false }), deleteGradeFormatById);
+    router.get('/get_grade_byId/:id', passport.authenticate('jwt', { session: false }), getGradeFormatById);
     router.post('/add_student/:schoolId/student', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), createStudent);
     router.post('/news_Letter/:schoolId/school_news', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), newsLetter);
     router.post('/update_Letter/:id', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), updateNewsLetterById);
