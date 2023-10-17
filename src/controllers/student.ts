@@ -9,15 +9,10 @@ import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "fir
 import {Storage, Bucket_url} from '../config/firebase';
 import SchoolClass from '../db/schoolClass';
 
-function generateId() {
-    return `STF-${shortid.generate()}`;
-  }
-
 
 async function generateStudentId(schoolId: string): Promise<string> {
   try {
-    const lastStudent = await Student.findOne({ schoolId }).sort({ studentId: -1 });
-
+    const lastStudent = await Student.findOne({ school: schoolId }).sort({ studentId: -1 });
     let newStudentNumber = 1; // Default starting number
     if (lastStudent) {
       // If there is a last student, increment the number
@@ -40,7 +35,7 @@ async function generateStudentId(schoolId: string): Promise<string> {
     try {
       const { name, lastName, address, dateOfBirth, phoneNumber, email, gender, studentClass, guardainsFullName } = req.body;
       const { schoolId } = req.params;
-  
+      
       // Check if the school with the provided schoolId exists
       const school: ISchool | null = await mySchool.findById(schoolId);
   
@@ -75,7 +70,6 @@ async function generateStudentId(schoolId: string): Promise<string> {
   
   
       const studentId: string = await generateStudentId(schoolId);
-  
       // Create a new student with or without the profile picture URL
       const studentData: any = {
         name,
