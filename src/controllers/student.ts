@@ -8,26 +8,35 @@ import { v4 as uuidv4 } from 'uuid';
 import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
 import {Storage, Bucket_url} from '../config/firebase';
 import SchoolClass from '../db/schoolClass';
+import crypto from 'crypto';
 
-
-async function generateStudentId(schoolId: string): Promise<string> {
+async function generateStudentId(schoolId: string, schoolName: string): Promise<string> {
   try {
-    const lastStudent = await Student.findOne({ school: schoolId }).sort({ studentId: -1 });
+    // Hash the school name to create a unique prefix
+    const hash = crypto.createHash('md5').update(schoolName).digest('hex').toUpperCase().substring(0, 3);
+    
     let newStudentNumber = 1; // Default starting number
-    if (lastStudent) {
-      // If there is a last student, increment the number
-      const lastStudentNumber: number = parseInt(lastStudent.studentId, 10);
-      newStudentNumber = lastStudentNumber + 1;
+
+    while (true) {
+      // Combine the hashed school prefix with the padded number
+      const paddedNumber: string = String(newStudentNumber).padStart(3, '0'); // Pad with leading zeros
+      const newStudentId: string = `${hash}${paddedNumber}`;
+
+      // Check if the generated student ID already exists for any school
+      const existingStudent = await Student.findOne({ studentId: newStudentId });
+
+      if (!existingStudent) {
+        return newStudentId; // Return the ID if it's unique
+      }
+
+      newStudentNumber++; // Increment the number and try again
     }
-
-    const paddedNumber: string = String(newStudentNumber).padStart(3, '0'); // Pad with leading zeros
-    const newStudentId: string = paddedNumber;
-
-    return newStudentId;
   } catch (error) {
     throw new Error(`Error generating student ID: ${error.message}`);
   }
 }
+
+
 
   
 
@@ -43,6 +52,8 @@ async function generateStudentId(schoolId: string): Promise<string> {
         return res.status(404).json({ error: 'School not found' });
       }
   
+       // Extract the school name
+    const schoolName: string = school.name;
       // const Bucket_url = "gs://grapple-a4d53.appspot.com"
       // Check if the email already exists in the database
       const existingStudent: IStudent | null = await Student.findOne({ email });
@@ -69,7 +80,7 @@ async function generateStudentId(schoolId: string): Promise<string> {
       }
   
   
-      const studentId: string = await generateStudentId(schoolId);
+      const studentId: string = await generateStudentId(schoolId, schoolName);
       // Create a new student with or without the profile picture URL
       const studentData: any = {
         name,

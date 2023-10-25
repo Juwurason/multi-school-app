@@ -2,155 +2,114 @@ import express, { Request, Response } from 'express';
 import Subject, { ISubject } from '../db/subject';
 import mySchool, { ISchool } from '../db/myschools';
 import { isValidObjectId } from 'mongoose'
+import SchoolClass from '../db/schoolClass';
 
-
-// export const subject: express.RequestHandler = async (req: Request, res: Response) => {
-//   try {
-//     const { subjectNames, schoolClassId } = req.body;
-//     const { schoolId } = req.params;
-
-//     const school: ISchool | null = await mySchool.findById(schoolId);
-
-//     if (!school) {
-//       return res.status(404).json({ error: 'School not found' });
-//     }
-
-//     const createdSubjects: ISubject[] = [];
-
-//     // Loop through the subject array and create each subject
-//     for (const subjectName of subjectNames) {
-//       // Check if a subject with the same name and schoolClass already exists for the school
-//       const existingSubject: ISubject | null = await Subject.findOne({
-//         school: schoolId,
-//         subject: subjectName,
-//         schoolClass: schoolClassId || null, // If schoolClassId is provided, filter by it, otherwise, get general subjects
-//       });
-
-//       if (existingSubject) {
-//         // If the subject already exists, skip it and return an error
-//         return res.status(400).json({ error: `Subject '${subjectName}' already exists for this school or class` });
-//       }
-
-//       // Create and save the new subject
-//       const newSubject: ISubject = new Subject({
-//         school: schoolId,
-//         subject: subjectName,
-//         schoolClass: schoolClassId || null, // Assign schoolClassId if provided, otherwise, set to null for general subjects
-//       });
-
-//       const savedSubject = await newSubject.save();
-//       createdSubjects.push(savedSubject);
-//     }
-
-//     return res.status(201).json({ message: 'Subjects created successfully', subjects: createdSubjects });
-//   } catch (error) {
-//     console.error('Error creating subjects:', error);
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
-// export const subject: express.RequestHandler = async (req: Request, res: Response) => {
-//   try {
-//     const { subjects } = req.body; // subjects is an array of objects containing subjectName and schoolClassIds
-
-//     const { schoolId } = req.params;
-
-//     const school: ISchool | null = await mySchool.findById(schoolId);
-
-//     if (!school) {
-//       return res.status(404).json({ error: 'School not found' });
-//     }
-
-//     const createdSubjects: ISubject[] = [];
-
-//     // Loop through the subjects array and create each subject
-//     for (const subjectData of subjects) {
-//       const { subjectName, schoolClassIds } = subjectData;
-
-//       // Check if a subject with the same name already exists for the school and any of the specified classes
-//       const existingSubject: ISubject | null = await Subject.findOne({
-//         school: schoolId,
-//         subject: subjectName,
-//         schoolClass: { $in: schoolClassIds },
-//       });
-
-//       if (existingSubject) {
-//         // If the subject already exists for any of the specified classes, skip it and return an error
-//         return res.status(400).json({ error: `Subject '${subjectName}' already exists for this school or class` });
-//       }
-
-//       // Create and save the new subject
-//       const newSubject: ISubject = new Subject({
-//         school: schoolId,
-//         subject: subjectName,
-//         schoolClass: schoolClassIds, // Assign an array of schoolClassIds
-//       });
-
-//       const savedSubject = await newSubject.save();
-//       createdSubjects.push(savedSubject);
-//     }
-
-//     return res.status(201).json({ message: 'Subjects created successfully', subjects: createdSubjects });
-//   } catch (error) {
-//     console.error('Error creating subjects:', error);
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
 
 export const subject: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-      const { subjectNames, schoolClassIds } = req.body;
-      const { schoolId } = req.params;
+    const { subjectNames, schoolClassIds } = req.body;
+    const { schoolId } = req.params;
 
-      // Check if subjectNames and schoolClassIds are defined and have elements
-      if (!subjectNames || !schoolClassIds || subjectNames.length !== schoolClassIds.length) {
-          return res.status(400).json({ error: 'Invalid request data' });
+    // Check if subjectNames is defined and is an array
+    if (!subjectNames || !Array.isArray(subjectNames)) {
+      return res.status(400).json({ error: 'Invalid request data' });
+    }
+
+    const school: ISchool | null = await mySchool.findById(schoolId);
+
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+
+    const createdSubjects: ISubject[] = [];
+
+    // Loop through both subjectNames and schoolClassIds arrays and create each subject
+    for (let i = 0; i < subjectNames.length; i++) {
+      const subjectName = subjectNames[i];
+      const schoolClassId = schoolClassIds && schoolClassIds[i] ? schoolClassIds[i] : null;
+
+      // Check if a subject with the same name already exists for the school and specified class
+      const existingSubject: ISubject | null = await Subject.findOne({
+        school: schoolId,
+        subject: subjectName,
+        schoolClass: schoolClassId,
+      });
+
+      if (existingSubject) {
+        // If the subject already exists for the specified class, skip it and return an error
+        return res.status(400).json({ error: `Subject '${subjectName}' already exists for this school and class` });
       }
 
-      const school: ISchool | null = await mySchool.findById(schoolId);
+      // Create and save the new subject
+      const newSubject: ISubject = new Subject({
+        school: schoolId,
+        subject: subjectName,
+        schoolClass: schoolClassId,
+      });
 
-      if (!school) {
-          return res.status(404).json({ error: 'School not found' });
-      }
+      const savedSubject = await newSubject.save();
+      createdSubjects.push(savedSubject);
+    }
 
-      const createdSubjects: ISubject[] = [];
-
-      // Loop through the subjectNames array and create each subject
-      for (let i = 0; i < subjectNames.length; i++) {
-          const subjectName = subjectNames[i];
-          const schoolClassId = schoolClassIds[i];
-
-          // Check if a subject with the same name already exists for the school and specified class
-          const existingSubject: ISubject | null = await Subject.findOne({
-              school: schoolId,
-              subject: subjectName,
-              schoolClass: schoolClassId,
-          });
-
-          if (existingSubject) {
-              // If the subject already exists for the specified class, skip it and return an error
-              return res.status(400).json({ error: `Subject '${subjectName}' already exists for this school and class` });
-          }
-
-          // Create and save the new subject
-          const newSubject: ISubject = new Subject({
-              school: schoolId,
-              subject: subjectName,
-              schoolClass: schoolClassId,
-          });
-
-          const savedSubject = await newSubject.save();
-          createdSubjects.push(savedSubject);
-      }
-
-      return res.status(201).json({ message: 'Subjects created successfully', subjects: createdSubjects });
+    return res.status(201).json({ message: 'Subjects created successfully', subjects: createdSubjects });
   } catch (error) {
-      console.error('Error creating subjects:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error creating subjects:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-  
+// export const subject: express.RequestHandler = async (req: Request, res: Response) => {
+//   try {
+//     const { subjectNames, schoolClassIds } = req.body;
+//     const { schoolId } = req.params;
+
+//     // Check if subjectNames is defined and is an array, otherwise fetch all subjects for the school
+//     const subjectsToCreate = subjectNames && Array.isArray(subjectNames) ? subjectNames : [];
+
+//     // If schoolClassIds are not provided or not an array, fetch all school class IDs for the school
+//     const classesToAssign = schoolClassIds && Array.isArray(schoolClassIds) ? schoolClassIds : await SchoolClass.find({ school: schoolId }).select('_id');
+
+//     const school: ISchool | null = await mySchool.findById(schoolId);
+
+//     if (!school) {
+//       return res.status(404).json({ error: 'School not found' });
+//     }
+
+//     const createdSubjects: ISubject[] = [];
+
+//     // Loop through subjects and create each subject for all specified classes
+//     for (const subjectName of subjectsToCreate) {
+//       for (const classId of classesToAssign) {
+//         // Check if a subject with the same name already exists for the school and specified class
+//         const existingSubject: ISubject | null = await Subject.findOne({
+//           school: schoolId,
+//           subject: subjectName,
+//           schoolClass: classId,
+//         });
+
+//         if (existingSubject) {
+//           // If the subject already exists for the specified class, skip it and return an error
+//           return res.status(400).json({ error: `Subject '${subjectName}' already exists for this school and class` });
+//         }
+
+//         // Create and save the new subject
+//         const newSubject: ISubject = new Subject({
+//           school: schoolId,
+//           subject: subjectName,
+//           schoolClass: classId,
+//         });
+
+//         const savedSubject = await newSubject.save();
+//         createdSubjects.push(savedSubject);
+//       }
+//     }
+
+//     return res.status(201).json({ message: 'Subjects created successfully', subjects: createdSubjects });
+//   } catch (error) {
+//     console.error('Error creating subjects:', error);
+//     return res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
 
 
   export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {

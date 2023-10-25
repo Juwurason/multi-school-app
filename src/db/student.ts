@@ -43,7 +43,6 @@ const studentSchema: Schema = new Schema<IStudent>({
   },
   studentId: {
     type: String,
-    unique: true,
     required: true,
   },
   profilePictureUrl: String,
