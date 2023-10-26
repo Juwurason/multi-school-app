@@ -5,13 +5,18 @@ import { isValidObjectId } from 'mongoose'
 import SchoolClass from '../db/schoolClass';
 
 
+interface CreateSubjectRequest {
+  subjectNames: string[];
+  schoolClassIds: string[];
+}
+
 export const subject: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-    const { subjectNames, schoolClassIds } = req.body;
+    const { subjectNames, schoolClassIds }: CreateSubjectRequest = req.body;
     const { schoolId } = req.params;
 
-    // Check if subjectNames is defined and is an array
-    if (!subjectNames || !Array.isArray(subjectNames)) {
+    // Check if subjectNames and schoolClassIds are defined
+    if (!subjectNames || !schoolClassIds) {
       return res.status(400).json({ error: 'Invalid request data' });
     }
 
@@ -23,32 +28,36 @@ export const subject: express.RequestHandler = async (req: Request, res: Respons
 
     const createdSubjects: ISubject[] = [];
 
-    // Loop through both subjectNames and schoolClassIds arrays and create each subject
+    // Loop through subjectNames and schoolClassIds arrays and create each subject
     for (let i = 0; i < subjectNames.length; i++) {
       const subjectName = subjectNames[i];
-      const schoolClassId = schoolClassIds && schoolClassIds[i] ? schoolClassIds[i] : null;
 
-      // Check if a subject with the same name already exists for the school and specified class
-      const existingSubject: ISubject | null = await Subject.findOne({
-        school: schoolId,
-        subject: subjectName,
-        schoolClass: schoolClassId,
-      });
+      // Loop through schoolClassIds for the current subject and create a subject for each class
+      for (let j = 0; j < schoolClassIds.length; j++) {
+        const schoolClassId = schoolClassIds[j];
 
-      if (existingSubject) {
-        // If the subject already exists for the specified class, skip it and return an error
-        return res.status(400).json({ error: `Subject '${subjectName}' already exists for this school and class` });
+        // Check if a subject with the same name already exists for the school and specified class
+        const existingSubject: ISubject | null = await Subject.findOne({
+          school: schoolId,
+          subject: subjectName,
+          schoolClass: schoolClassId,
+        });
+
+        if (existingSubject) {
+          // If the subject already exists for the specified class, skip it and continue to the next subject
+          return res.status(400).json({ error: `Subject '${subjectName}' already exists for this school and class` });
+        }
+
+        // Create and save the new subject
+        const newSubject: ISubject = new Subject({
+          school: schoolId,
+          subject: subjectName,
+          schoolClass: schoolClassId,
+        });
+
+        const savedSubject = await newSubject.save();
+        createdSubjects.push(savedSubject);
       }
-
-      // Create and save the new subject
-      const newSubject: ISubject = new Subject({
-        school: schoolId,
-        subject: subjectName,
-        schoolClass: schoolClassId,
-      });
-
-      const savedSubject = await newSubject.save();
-      createdSubjects.push(savedSubject);
     }
 
     return res.status(201).json({ message: 'Subjects created successfully', subjects: createdSubjects });
@@ -124,7 +133,11 @@ export const subject: express.RequestHandler = async (req: Request, res: Respons
       }
   
       // Fetch Subject associated with the school
-      const subject = await Subject.find({ school: school._id });
+      const subject = await Subject.find({ school: school._id })
+      .populate({
+        path: 'schoolClass',
+        populate: { path: 'assignedTeacher', model: 'Teacher' }
+      });
   
       return res.status(200).json(subject);
     } catch (error) {

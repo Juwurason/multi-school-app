@@ -10,32 +10,35 @@ import {Storage, Bucket_url} from '../config/firebase';
 import SchoolClass from '../db/schoolClass';
 import crypto from 'crypto';
 
-async function generateStudentId(schoolId: string, schoolName: string): Promise<string> {
-  try {
-    // Hash the school name to create a unique prefix
-    const hash = crypto.createHash('md5').update(schoolName).digest('hex').toUpperCase().substring(0, 3);
+// async function generateStudentId(schoolId: string, schoolName: string): Promise<string> {
+//   try {
+//     // Hash the school name to create a unique prefix
+//     const hash = crypto.createHash('md5').update(schoolName).digest('hex').toUpperCase().substring(0, 3);
     
-    let newStudentNumber = 1; // Default starting number
+//     let newStudentNumber = 1; // Default starting number
 
-    while (true) {
-      // Combine the hashed school prefix with the padded number
-      const paddedNumber: string = String(newStudentNumber).padStart(3, '0'); // Pad with leading zeros
-      const newStudentId: string = `${hash}${paddedNumber}`;
+//     while (true) {
+//       // Combine the hashed school prefix with the padded number
+//       const paddedNumber: string = String(newStudentNumber).padStart(3, '0'); // Pad with leading zeros
+//       const newStudentId: string = `${hash}${paddedNumber}`;
 
-      // Check if the generated student ID already exists for any school
-      const existingStudent = await Student.findOne({ studentId: newStudentId });
+//       // Check if the generated student ID already exists for any school
+//       const existingStudent = await Student.findOne({ studentId: newStudentId });
 
-      if (!existingStudent) {
-        return newStudentId; // Return the ID if it's unique
-      }
+//       if (!existingStudent) {
+//         return newStudentId; // Return the ID if it's unique
+//       }
 
-      newStudentNumber++; // Increment the number and try again
-    }
-  } catch (error) {
-    throw new Error(`Error generating student ID: ${error.message}`);
-  }
+//       newStudentNumber++; // Increment the number and try again
+//     }
+//   } catch (error) {
+//     throw new Error(`Error generating student ID: ${error.message}`);
+//   }
+// }
+
+function generateStaffId(schoolShortName: string): string {
+  return `${schoolShortName}-${shortid.generate()}`;
 }
-
 
 
   
@@ -52,6 +55,7 @@ async function generateStudentId(schoolId: string, schoolName: string): Promise<
         return res.status(404).json({ error: 'School not found' });
       }
   
+      const schoolShortName = school.name.substring(0, 3).toUpperCase();
        // Extract the school name
     const schoolName: string = school.name;
       // const Bucket_url = "gs://grapple-a4d53.appspot.com"
@@ -80,7 +84,7 @@ async function generateStudentId(schoolId: string, schoolName: string): Promise<
       }
   
   
-      const studentId: string = await generateStudentId(schoolId, schoolName);
+      // const studentId: string = await generateStudentId(schoolId, schoolName);
       // Create a new student with or without the profile picture URL
       const studentData: any = {
         name,
@@ -93,7 +97,7 @@ async function generateStudentId(schoolId: string, schoolName: string): Promise<
         studentClass,
         guardainsFullName,
         school: school._id,
-        studentId,
+        studentId: generateStaffId(schoolShortName),
       };
   
       if (fileUrl) {
