@@ -1,11 +1,11 @@
 import mongoose, { Document, Model, Schema } from 'mongoose';
 
-// Define the Letter schema
+
 export interface IScore extends Document {
   
   school: Schema.Types.ObjectId; 
-  exam?: string;
-  ca?: string;
+  exam?: number;
+  ca?: number;
 }
 
 const scoreSchema: Schema = new Schema<IScore>({
@@ -14,8 +14,8 @@ const scoreSchema: Schema = new Schema<IScore>({
     ref: 'School', // Reference to the School model
     required: true,
   },
-  exam: String,
-  ca: String,
+  exam: Number,
+  ca: Number,
 }, {
   timestamps: true,
 });

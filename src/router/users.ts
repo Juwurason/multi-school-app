@@ -10,6 +10,8 @@ import { deleteSchoolClassById, getSchoolClassById, getSchoolClassBySchoolId, sc
 import { deleteSubjectById, getSubjectByClassId, getSubjectById, getSubjectBySchoolId, subject } from '../controllers/subject';
 import { deleteScoreById, getScoreById, getScoreBySchoolId, score, updateScoreById } from '../controllers/score';
 import { createGradeFormat, deleteGradeFormatById, getGradeFormatById, getGradeFormatsBySchoolId, updateGradeById } from '../controllers/grade';
+import { deleteStudentScoreById, getScoresById, getStudentScoreById, studentGrade, updateStudentScoreById } from '../controllers/studentGrade';
+import { deleteReportById, getReportById, getReportsByStudentId, report, updateReportById } from '../controllers/report';
 // Create a Multer storage for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -20,9 +22,7 @@ export default (router: express.Router) => {
     })
     router.get('/get_all_teacher-by_school_Id/:schoolId/teachers', passport.authenticate('jwt', { session: false }), getTeachersBySchoolId);
     router.get('/get_all_school-classes-by_school_Id/:schoolId/classes', passport.authenticate('jwt', { session: false }), getSchoolClassBySchoolId);
-    router.get('/get_all_school-subjects-by_school_Id/:schoolId/subjects',
-    //  passport.authenticate('jwt', { session: false }),
-      getSubjectBySchoolId);
+    router.get('/get_all_school-subjects-by_school_Id/:schoolId/subjects', passport.authenticate('jwt', { session: false }), getSubjectBySchoolId);
     router.get('/get_all_students-by_school_Id/:schoolId/students', passport.authenticate('jwt', { session: false }), getStudentsBySchoolId);
     router.get('/get_all_news_Letter_by_school_Id/:schoolId/newsLetter', passport.authenticate('jwt', { session: false }), getLetterBySchoolId);
     router.get('/get_teacher_byId/:id', passport.authenticate('jwt', { session: false }), getTeachersById);
@@ -42,6 +42,16 @@ export default (router: express.Router) => {
     router.post('/add_classes/:schoolId/classes', passport.authenticate('jwt', { session: false }), schoolClass);
     router.post('/add_subjects/:schoolId/subjects', passport.authenticate('jwt', { session: false }), subject);
     router.post('/add_score/:schoolId', passport.authenticate('jwt', { session: false }), score);
+    router.post('/add_report/:studentId', passport.authenticate('jwt', { session: false }), report);
+    router.post('/update_report/:reportId', passport.authenticate('jwt', { session: false }), updateReportById);
+    router.get('/report_details/:reportId', passport.authenticate('jwt', { session: false }), getReportById);
+    router.get('/get_student_report/:studentId', passport.authenticate('jwt', { session: false }), getReportsByStudentId);
+    router.post('/delete_report/:reportId', passport.authenticate('jwt', { session: false }), deleteReportById);
+    router.post('/add_student_score/:schoolId/:studentId/:subjectId', passport.authenticate('jwt', { session: false }), studentGrade);
+    router.post('/update_student_score/:id', passport.authenticate('jwt', { session: false }), updateStudentScoreById);
+    router.get('/get_student_score/:schoolId/:studentId', passport.authenticate('jwt', { session: false }), getStudentScoreById);
+    router.get('/get_student_score_byId/:id', passport.authenticate('jwt', { session: false }), getScoresById);
+    router.post('/delete_student_score_byId/:id', passport.authenticate('jwt', { session: false }), deleteStudentScoreById);
     router.post('/update_score/:id', passport.authenticate('jwt', { session: false }), updateScoreById);
     router.post('/delete_score/:id', passport.authenticate('jwt', { session: false }), deleteScoreById);
     router.get('/get_score_byId/:id', passport.authenticate('jwt', { session: false }), getScoreById);

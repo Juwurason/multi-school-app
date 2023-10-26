@@ -1,14 +1,16 @@
-import Score, { IScore } from '../db/score'
 import express, { Request, Response } from 'express';
 import mySchool, { ISchool } from '../db/myschools';
 import { isValidObjectId } from 'mongoose'
+import StudentGradeFormat, { IStudentGradeFormat } from '../db/studentGrade';
+import Student, {IStudent} from '../db/student';
+import Subject, {ISubject} from '../db/subject';
 
 
-export const score: express.RequestHandler = async (req: Request, res: Response) => {
+export const studentGrade: express.RequestHandler = async (req: Request, res: Response) => {
 
     try {
         const { exam, ca } = req.body
-        const { schoolId } = req.params;
+        const { schoolId, studentId, subjectId } = req.params;
 
     // Check if the school with the provided schoolId exists
     const school: ISchool | null = await mySchool.findById(schoolId);
@@ -17,18 +19,32 @@ export const score: express.RequestHandler = async (req: Request, res: Response)
       return res.status(404).json({ error: 'School not found' });
     }
 
+    const student: IStudent | null = await Student.findById(studentId);
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    const subject: ISubject | null = await Subject.findById(subjectId);
+
+    if (!subject) {
+      return res.status(404).json({ error: 'Subject not found' });
+    }
+
     
       const scoreData: any = {
         exam,
         ca,
         school: school._id,
+        student: student._id,
+        subject: subject._id,
       };
 
      
-    const score: IScore = new Score(scoreData)
+    const score: IStudentGradeFormat = new StudentGradeFormat(scoreData)
 
     await score.save();
-    return res.status(201).json({ message: 'Score created successfully', score });
+    return res.status(201).json({ message: 'Student Score created successfully', score });
 
     } catch (error) {
         console.error('Error creating Score:', error);
@@ -37,7 +53,7 @@ export const score: express.RequestHandler = async (req: Request, res: Response)
     
 }
 
-export const updateScoreById: express.RequestHandler = async (req: Request, res: Response) => {
+export const updateStudentScoreById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
    
         const { exam, ca } = req.body
@@ -48,11 +64,11 @@ export const updateScoreById: express.RequestHandler = async (req: Request, res:
       return res.status(400).json({ error: 'Invalid ID' });
     }
 
-    // Find the teacher by ID
-    const existingScore: IScore | null = await Score.findById(id);
+    
+    const existingScore: IStudentGradeFormat | null = await StudentGradeFormat.findById(id);
 
     if (!existingScore) {
-      return res.status(404).json({ error: 'Score not found' });
+      return res.status(404).json({ error: 'grade not found' });
     }
 
     
@@ -71,9 +87,9 @@ export const updateScoreById: express.RequestHandler = async (req: Request, res:
   }
 };
 
-export const getScoreBySchoolId: express.RequestHandler = async (req, res) => {
+export const getStudentScoreById: express.RequestHandler = async (req, res) => {
     try {
-      const { schoolId } = req.params;
+      const { schoolId, studentId } = req.params;
   
       // Check if the school with the provided schoolId exists
       const school = await mySchool.findById(schoolId);
@@ -81,18 +97,36 @@ export const getScoreBySchoolId: express.RequestHandler = async (req, res) => {
       if (!school) {
         return res.status(404).json({ error: 'School not found' });
       }
+
+      const student: IStudent | null = await Student.findById(studentId);
+
+      if (!student) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
   
     
-      const score = await Score.find({ school: school._id });
-  
-      return res.status(200).json(score);
+      const scores = await StudentGradeFormat.find({ school: school._id, student: student._id });
+      // Validate the fetched scores against school's limits
+      const validatedScores = [];
+      for (const score of scores) {
+        try {
+          await score.validate();
+          validatedScores.push(score);
+        } catch (error) {
+          // Handle validation error, e.g., log the error or respond with an error message
+          console.error('Score validation error:', error);
+        }
+      }
+
+    return res.status(200).json(validatedScores);
+    //   return res.status(200).json(score);
     } catch (error) {
       console.error('Error fetching score by schoolId:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
 
-  export const getScoreById: express.RequestHandler = async (req, res) => {
+  export const getScoresById: express.RequestHandler = async (req, res) => {
     try {
       const { id } = req.params;
   
@@ -101,7 +135,7 @@ export const getScoreBySchoolId: express.RequestHandler = async (req, res) => {
         return res.status(400).json({ error: 'Invalid ID' });
       }
   
-      const score: IScore | null = await Score.findById(id);
+      const score: IStudentGradeFormat | null = await StudentGradeFormat.findById(id);
   
       if (!score) {
         return res.status(404).json({ error: 'Score not found' });
@@ -114,7 +148,7 @@ export const getScoreBySchoolId: express.RequestHandler = async (req, res) => {
     }
   };
 
-  export const deleteScoreById: express.RequestHandler = async (req, res) => {
+  export const deleteStudentScoreById: express.RequestHandler = async (req, res) => {
     try {
     const { id } = req.params;
 
@@ -124,7 +158,7 @@ export const getScoreBySchoolId: express.RequestHandler = async (req, res) => {
     }
 
     // Find the score by ID and delete it
-    const deletedScore: IScore | null = await Score.findByIdAndRemove(id);
+    const deletedScore: IStudentGradeFormat | null = await StudentGradeFormat.findByIdAndRemove(id);
 
     if (!deletedScore) {
       return res.status(404).json({ error: 'Score not found' });

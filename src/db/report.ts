@@ -2,25 +2,44 @@ import mongoose, { Document, Model, Schema } from 'mongoose';
 
 // Define the SchoolClass schema
 export interface IReport extends Document {
-  
-  school: Schema.Types.ObjectId; 
-  schoolClass?: string;
-  assignedTeacher?: Schema.Types.ObjectId | null;
+  student: Schema.Types.ObjectId; 
+  presentNo: string;
+  absentNo: string;
+  attentiveness: string;
+  honesty: string;
+  neatness: string;
+  puntuality: string;
+  leadershipRespon: string;
+  handling: string;
+  handWriting: string;
+  publicSpeack: string;
+  drawingPainting: string;
+  sportGames: string;
+  classTeacher: string;
+  headTeacher: string;
 }
 
 const report: Schema = new Schema<IReport>({
-  school: {
+  student: {
     type: Schema.Types.ObjectId,
-    ref: 'School', // Reference to the School model
+    ref: 'Student', // Reference to the Student model
     required: true,
   },
-  schoolClass: String,
-  
-  assignedTeacher: {
-    type: Schema.Types.ObjectId,
-    ref: 'Teacher', // Reference to the Teacher model
-    default: null, // Initially, no teacher is assigned
-  },
+  presentNo: String,
+  absentNo: String,
+  attentiveness: String,
+  honesty: String,
+  neatness: String,
+  puntuality: String,
+  leadershipRespon: String,
+  handling: String,
+  handWriting: String,
+  publicSpeack: String,
+  drawingPainting: String,
+  sportGames: String,
+  classTeacher: String,
+  headTeacher: String,
+ 
 }, {
   timestamps: true,
 });
