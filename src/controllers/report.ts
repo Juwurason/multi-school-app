@@ -171,3 +171,91 @@ export const updateReportById: express.RequestHandler = async (req: Request, res
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+  export async function sendEmail(email: string, emailContent: string): Promise<void> {
+    try {
+  
+      const name: string = 'MySchoolApp';
+      const subject: string = 'Student Report';
+    //   const emailContent = fileUrl
+    //         ? `<p>${content}</p><img src="${fileUrl}" alt="Image"/>`
+    //         : `<p>${content}</p>`;
+  
+      const response = await axios.post('https://mail.onrender.com/sendmail', {
+        name: name,
+        mail: email,
+        subject: subject,
+        html: emailContent
+      });
+  
+      if (response.status === 200) {
+        console.log('Message sent successfully');
+      } else {
+        console.error('Failed to send message');
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+  }
+
+  export const sendReportAndScoreByEmail: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { studentId } = req.params;
+  
+      // Find the student by ID
+      const student: IStudent | null = await Student.findById(studentId);
+  
+      // If the student is not found, return a 404 error
+      if (!student) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
+  
+      // Find the student's report
+      const report: IReport | null = await Report.findOne({ student: student._id });
+  
+      // Find the student's score
+      const score: IStudentGradeFormat | null = await StudentGradeFormat.findOne({ student: student._id });
+  
+      // If the report or score is not found, return an error
+      if (!report || !score) {
+        return res.status(404).json({ error: 'Report or score not found for the student' });
+      }
+  
+      // Format the data (customize this according to your needs)
+      const emailContent = `
+      <h2>Student Report and Score</h2>
+      <table border="1">
+        <tr>
+          <th>Category</th>
+          <th>Value</th>
+        </tr>
+        <tr>
+          <td>Present No</td>
+          <td>${report.presentNo}</td>
+        </tr>
+        <tr>
+          <td>Absent No</td>
+          <td>${report.absentNo}</td>
+        </tr>
+        <!-- Add more report fields as needed -->
+        <tr>
+          <td>CA</td>
+          <td>${score.ca}</td>
+        </tr>
+        <tr>
+          <td>Exam</td>
+          <td>${score.exam}</td>
+        </tr>
+        <!-- Add more score fields as needed -->
+      </table>
+    `;
+  
+      // Send the email to the student
+      await sendEmail(student.email, emailContent);
+  
+      return res.status(200).json({ message: 'Email sent successfully' });
+    } catch (error) {
+      console.error('Error sending report and score by email:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };

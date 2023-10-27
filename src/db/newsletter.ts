@@ -7,6 +7,7 @@ export interface ILetter extends Document {
   newsLetterUrl?: string;
   subject?: string;
   content?: string;
+  status: 'saved' | 'sent'; // Status can be 'saved' or 'sent'
 }
 
 const newsLetterSchema: Schema = new Schema<ILetter>({
@@ -18,6 +19,11 @@ const newsLetterSchema: Schema = new Schema<ILetter>({
   newsLetterUrl: String,
   subject: String,
   content: String,
+  status: {
+    type: String,
+    enum: ['saved', 'sent'],
+    default: 'saved', // Default status is 'saved'
+  },
 }, {
   timestamps: true,
 });
