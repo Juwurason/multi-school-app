@@ -1,8 +1,7 @@
 import express, { Request, Response } from 'express';
 import Subject, { ISubject } from '../db/subject';
 import mySchool, { ISchool } from '../db/myschools';
-import { isValidObjectId } from 'mongoose'
-import SchoolClass from '../db/schoolClass';
+import { isValidObjectId, Aggregate, PopulateOptions } from 'mongoose'
 
 
 interface CreateSubjectRequest {
@@ -117,6 +116,46 @@ export const subject: express.RequestHandler = async (req: Request, res: Respons
 //   } catch (error) {
 //     console.error('Error creating subjects:', error);
 //     return res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+// export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {
+//   try {
+//       const { schoolId } = req.params;
+
+//       // Check if the school with the provided schoolId exists
+//       const school = await mySchool.findById(schoolId);
+
+//       if (!school) {
+//           return res.status(404).json({ error: 'School not found' });
+//       }
+
+//       // Use aggregation framework to group subjects by their names and populate associated classes
+//       const subjects: Aggregate<any[]> = Subject.aggregate([
+//           {
+//               $match: { school: school._id },
+//           },
+//           {
+//               $group: {
+//                   _id: '$subject', // Group by subject name
+//                   classes: {
+//                       $push: '$schoolClass', // Push associated classes into an array
+//                   },
+//               },
+//           },
+//       ]);
+
+//       // Execute aggregation and populate classes with assigned teachers
+//       const populatedSubjects = await subjects.exec();
+//       const options: PopulateOptions[] = [
+//           { path: 'classes', populate: { path: 'assignedTeacher', model: 'Teacher' } },
+//       ];
+//       const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
+
+//       return res.status(200).json(subjectsWithPopulatedClasses);
+//   } catch (error) {
+//       console.error('Error fetching subject by schoolId:', error);
+//       return res.status(500).json({ error: 'Internal server error' });
 //   }
 // };
 
