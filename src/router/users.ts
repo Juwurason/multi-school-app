@@ -11,7 +11,7 @@ import { deleteSubjectById, getSubjectByClassId, getSubjectById, getSubjectBySch
 import { deleteScoreById, getScoreById, getScoreBySchoolId, score, updateScoreById } from '../controllers/score';
 import { createGradeFormat, deleteGradeFormatById, getGradeFormatById, getGradeFormatsBySchoolId, updateGradeById } from '../controllers/grade';
 import { deleteStudentScoreById, getScoresById, getStudentScoreById, studentGrade, updateStudentScoreById } from '../controllers/studentGrade';
-import { deleteReportById, getReportById, getReportsByStudentId, report, updateReportById } from '../controllers/report';
+import { deleteReportById, getReportAndScoreByEmail, getReportById, getReportsByStudentId, report, updateReportById } from '../controllers/report';
 // Create a Multer storage for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -51,6 +51,7 @@ export default (router: express.Router) => {
     router.post('/update_student_score/:id', passport.authenticate('jwt', { session: false }), updateStudentScoreById);
     router.get('/get_student_score/:schoolId/:studentId', passport.authenticate('jwt', { session: false }), getStudentScoreById);
     router.get('/get_student_score_byId/:id', passport.authenticate('jwt', { session: false }), getScoresById);
+    router.get('/get_student_score_&_report/:studentId', passport.authenticate('jwt', { session: false }), getReportAndScoreByEmail);
     router.post('/delete_student_score_byId/:id', passport.authenticate('jwt', { session: false }), deleteStudentScoreById);
     router.post('/update_score/:id', passport.authenticate('jwt', { session: false }), updateScoreById);
     router.post('/delete_score/:id', passport.authenticate('jwt', { session: false }), deleteScoreById);

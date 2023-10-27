@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import Student , { IStudent } from '../db/student';
 import axios from 'axios';
 import { isValidObjectId } from 'mongoose'
+import StudentGradeFormat, { IStudentGradeFormat } from '../db/studentGrade';
 import Report, {IReport} from '../db/report';
 
 export const report: express.RequestHandler = async (req: Request, res: Response) => {
@@ -39,7 +40,7 @@ export const updateReportById: express.RequestHandler = async (req: Request, res
       const { presentNo, absentNo, attentiveness, honesty, neatness, puntuality, 
               leadershipRespon, handling, handWriting, publicSpeack, drawingPainting, 
               sportGames, classTeacher, headTeacher } = req.body;
-              
+
       const { reportId } = req.params;
         
       if (!isValidObjectId(reportId)) {
@@ -136,6 +137,37 @@ export const updateReportById: express.RequestHandler = async (req: Request, res
       return res.status(200).json({ message: 'Report deleted successfully', report: deletedReport });
     } catch (error) {
       console.error('Error deleting report by ID:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  export const getReportAndScoreByEmail: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { studentId } = req.params;
+  
+      // Find the student by ID
+      const student: IStudent | null = await Student.findById(studentId);
+  
+      // If the student is not found, return a 404 error
+      if (!student) {
+        return res.status(404).json({ error: 'Student not found' });
+      }
+  
+      // Find the student's report
+      const report: IReport | null = await Report.findOne({ student: student._id });
+  
+      // Find the student's score
+      const score: IStudentGradeFormat | null = await StudentGradeFormat.findOne({ student: student._id });
+  
+      // If the report or score is not found, return an error
+      if (!report || !score) {
+        return res.status(404).json({ error: 'Report or score not found for the student' });
+      }
+  
+      // Respond with the report and score data
+      return res.status(200).json({ report, score });
+    } catch (error) {
+      console.error('Error fetching report and score by email:', error);
       return res.status(500).json({ error: 'Internal server error' });
     }
   };
