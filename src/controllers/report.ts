@@ -22,7 +22,7 @@ export const report: express.RequestHandler = async (req: Request, res: Response
 
         const report = { presentNo,absentNo,attentiveness,honesty,neatness,puntuality,
             leadershipRespon,handling,handWriting,publicSpeack,drawingPainting,
-            sportGames,classTeacher,headTeacher, studentId: student._id }
+            sportGames,classTeacher,headTeacher, student: student._id }
 
             const newReport = new Report(report);
             await newReport.save();
