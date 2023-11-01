@@ -4,12 +4,13 @@ import { isValidObjectId } from 'mongoose'
 import StudentGradeFormat, { IStudentGradeFormat } from '../db/studentGrade';
 import Student, { IStudent } from '../db/student';
 import Subject, { ISubject } from '../db/subject';
+import GradeFormat, { IGradeFormat } from '../db/grade';
 
 
 export const studentGrade: express.RequestHandler = async (req: Request, res: Response) => {
 
   try {
-    const { exam, ca } = req.body
+    const { exam, ca, term } = req.body
     const { schoolId, studentId, subjectId } = req.params;
 
     // Check if the school with the provided schoolId exists
@@ -41,12 +42,38 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
       return res.status(400).json({ error: 'Score already exists for this student and subject' });
     }
 
+    const studentTotalScore: number = parseFloat(ca) + parseFloat(exam);
+    const grades: IGradeFormat[] | null = await GradeFormat.find({
+      school: school._id
+    });
+
+    if (!grades) {
+      return res.status(500).json({ error: 'Grade format not found for the school' });
+    }
+
+    let gradeRemark: string | null = null;
+
+
+    // Iterate through all grades to find a match for studentTotalScore
+    for (const grade of grades) {
+      if (studentTotalScore >= grade.miniScore && studentTotalScore <= grade.maxScore) {
+        gradeRemark = grade.grade;
+        break; // Exit loop once a matching grade is found
+      }
+    }
+
+    if (!gradeRemark) {
+      gradeRemark = 'N/A'; // Assign a default grade if no matching grade range is found
+    }
+
     const scoreData: any = {
       exam,
       ca,
+      term,
+      gradeRemark,
       school: school._id,
       student: student._id,
-      subject: subject._id,
+      subject: subject._id
     };
 
 
@@ -65,7 +92,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
 export const updateStudentScoreById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
 
-    const { exam, ca } = req.body
+    const { exam, ca, term } = req.body
     const { id } = req.params;
 
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
@@ -85,6 +112,7 @@ export const updateStudentScoreById: express.RequestHandler = async (req: Reques
     // Update other score information
     existingScore.exam = exam;
     existingScore.ca = ca;
+    existingScore.term = term;
 
     // Save the updated score to the database
     await existingScore.save();
@@ -114,15 +142,15 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
     }
 
     const scores = await StudentGradeFormat.find({ school: school._id, student: student._id })
-    .populate('subject')
-    .populate('student');
+      .populate('subject')
+      .populate('student');
     // const scores = await StudentGradeFormat.find({ school: school._id, student: student._id }).populate('subject');
     // Validate the fetched scores against school's limits
     const validatedScores = [];
     for (const score of scores) {
       try {
         await score.validate();
-        validatedScores.push(score);
+        validatedScores.push(score, student.name, student.lastName);
       } catch (error) {
         // Handle validation error, e.g., log the error or respond with an error message
         console.error('Score validation error:', error);

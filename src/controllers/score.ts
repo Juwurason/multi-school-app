@@ -7,7 +7,7 @@ import { isValidObjectId } from 'mongoose'
 export const score: express.RequestHandler = async (req: Request, res: Response) => {
 
     try {
-        const { exam, ca, term } = req.body;
+        const { exam, ca } = req.body;
         const { schoolId } = req.params;
 
     // Check if the school with the provided schoolId exists
@@ -21,7 +21,6 @@ export const score: express.RequestHandler = async (req: Request, res: Response)
       const scoreData: any = {
         exam,
         ca,
-        term,
         school: school._id,
       };
 
@@ -41,7 +40,7 @@ export const score: express.RequestHandler = async (req: Request, res: Response)
 export const updateScoreById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
    
-        const { exam, ca, term } = req.body
+        const { exam, ca } = req.body
         const { id } = req.params;
 
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
@@ -61,7 +60,6 @@ export const updateScoreById: express.RequestHandler = async (req: Request, res:
     // Update other score information
     existingScore.exam = exam;
     existingScore.ca = ca;
-    existingScore.term = term;
 
     // Save the updated score to the database
     await existingScore.save();

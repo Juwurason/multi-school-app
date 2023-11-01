@@ -8,6 +8,7 @@ export interface IStudentGradeFormat extends Document {
   subject: Schema.Types.ObjectId;
   ca: string;
   exam: string;
+  term: string;
   gradeRemark: string;
 }
 
@@ -26,6 +27,10 @@ const studentGradeSchema: Schema = new Schema<IStudentGradeFormat>(
     subject: {
       type: Schema.Types.ObjectId,
       ref: 'Subject', // Reference to the Subject model
+      required: true,
+    },
+    term: {
+      type: String,
       required: true,
     },
     ca: String,
