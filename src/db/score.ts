@@ -6,6 +6,7 @@ export interface IScore extends Document {
   school: Schema.Types.ObjectId; 
   exam?: number;
   ca?: number;
+  term?: string
 }
 
 const scoreSchema: Schema = new Schema<IScore>({
@@ -16,6 +17,10 @@ const scoreSchema: Schema = new Schema<IScore>({
   },
   exam: Number,
   ca: Number,
+  term:{
+    type: String,
+    required: true,
+  } 
 }, {
   timestamps: true,
 });
