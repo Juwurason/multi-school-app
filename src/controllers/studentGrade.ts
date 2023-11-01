@@ -113,8 +113,10 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-
-    const scores = await StudentGradeFormat.find({ school: school._id, student: student._id }).populate('subject');
+    const scores = await StudentGradeFormat.find({ school: school._id, student: student._id })
+    .populate('subject')
+    .populate('student');
+    // const scores = await StudentGradeFormat.find({ school: school._id, student: student._id }).populate('subject');
     // Validate the fetched scores against school's limits
     const validatedScores = [];
     for (const score of scores) {
