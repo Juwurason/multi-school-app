@@ -119,71 +119,71 @@ export const subject: express.RequestHandler = async (req: Request, res: Respons
 //   }
 // };
 
-// export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {
-//   try {
-//       const { schoolId } = req.params;
-
-//       // Check if the school with the provided schoolId exists
-//       const school = await mySchool.findById(schoolId);
-
-//       if (!school) {
-//           return res.status(404).json({ error: 'School not found' });
-//       }
-
-//       // Use aggregation framework to group subjects by their names and populate associated classes
-//       const subjects: Aggregate<any[]> = Subject.aggregate([
-//           {
-//               $match: { school: school._id },
-//           },
-//           {
-//               $group: {
-//                   _id: '$subject', // Group by subject name
-//                   classes: {
-//                       $push: '$schoolClass', // Push associated classes into an array
-//                   },
-//               },
-//           },
-//       ]);
-
-//       // Execute aggregation and populate classes with assigned teachers
-//       const populatedSubjects = await subjects.exec();
-//       const options: PopulateOptions[] = [
-//           { path: 'classes', populate: { path: 'assignedTeacher', model: 'Teacher' } },
-//       ];
-//       const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
-
-//       return res.status(200).json(subjectsWithPopulatedClasses);
-//   } catch (error) {
-//       console.error('Error fetching subject by schoolId:', error);
-//       return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
-
-
-  export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {
-    try {
+export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {
+  try {
       const { schoolId } = req.params;
-  
+
       // Check if the school with the provided schoolId exists
       const school = await mySchool.findById(schoolId);
-  
+
       if (!school) {
-        return res.status(404).json({ error: 'School not found' });
+          return res.status(404).json({ error: 'School not found' });
       }
-  
-      // Fetch Subject associated with the school
-      const subject = await Subject.find({ school: school._id })
-      .populate({
-        path: 'schoolClass',
-        populate: { path: 'assignedTeacher', model: 'Teacher' }
-      });
-  
-      return res.status(200).json(subject);
-    } catch (error) {
+
+      // Use aggregation framework to group subjects by their names and populate associated classes
+      const subjects: Aggregate<any[]> = Subject.aggregate([
+          {
+              $match: { school: school._id },
+          },
+          {
+              $group: {
+                  _id: '$subject', // Group by subject name
+                  classes: {
+                      $push: '$schoolClass', // Push associated classes into an array
+                  },
+              },
+          },
+      ]);
+
+      // Execute aggregation and populate classes with assigned teachers
+      const populatedSubjects = await subjects.exec();
+      const options: PopulateOptions[] = [
+          { path: 'classes', populate: { path: 'assignedTeacher', model: 'Teacher' } },
+      ];
+      const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
+
+      return res.status(200).json(subjectsWithPopulatedClasses);
+  } catch (error) {
       console.error('Error fetching subject by schoolId:', error);
       return res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+  }
+};
+
+
+  // export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {
+  //   try {
+  //     const { schoolId } = req.params;
+  
+  //     // Check if the school with the provided schoolId exists
+  //     const school = await mySchool.findById(schoolId);
+  
+  //     if (!school) {
+  //       return res.status(404).json({ error: 'School not found' });
+  //     }
+  
+  //     // Fetch Subject associated with the school
+  //     const subject = await Subject.find({ school: school._id })
+  //     .populate({
+  //       path: 'schoolClass',
+  //       populate: { path: 'assignedTeacher', model: 'Teacher' }
+  //     });
+  
+  //     return res.status(200).json(subject);
+  //   } catch (error) {
+  //     console.error('Error fetching subject by schoolId:', error);
+  //     return res.status(500).json({ error: 'Internal server error' });
+  //   }
+  // };
 
   export const getSubjectByClassId: express.RequestHandler = async (req: Request, res: Response) => {
     try {
