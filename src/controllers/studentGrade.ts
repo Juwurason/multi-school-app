@@ -150,7 +150,7 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
     for (const score of scores) {
       try {
         await score.validate();
-        validatedScores.push(score, student.name, student.lastName);
+        validatedScores.push({score, studentName: student.name, studentlastName: student.lastName});
       } catch (error) {
         // Handle validation error, e.g., log the error or respond with an error message
         console.error('Score validation error:', error);
