@@ -155,7 +155,7 @@ export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => 
       // Execute aggregation and populate classes with assigned teachers
       const populatedSubjects = await subjects.exec();
       const options: PopulateOptions[] = [
-          { path: 'classes', populate: { path: 'assignedTeacher', model: 'Teacher' } },
+          { path: 'schoolClass', populate: { path: 'assignedTeacher', model: 'Teacher' } },
           { path: 'schoolClass', model: 'SchoolClass' }
       ];
       const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
