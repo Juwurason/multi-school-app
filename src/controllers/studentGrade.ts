@@ -5,6 +5,7 @@ import StudentGradeFormat, { IStudentGradeFormat } from '../db/studentGrade';
 import Student, { IStudent } from '../db/student';
 import Subject, { ISubject } from '../db/subject';
 import GradeFormat, { IGradeFormat } from '../db/grade';
+import { score } from './score';
 
 
 export const studentGrade: express.RequestHandler = async (req: Request, res: Response) => {
@@ -124,6 +125,12 @@ export const updateStudentScoreById: express.RequestHandler = async (req: Reques
   }
 };
 
+interface ValidatedScore {
+  studentScore: any; // Replace YourScoreType with the actual type of studentScore
+  studentName: string;
+  studentLastName: string;
+}
+
 export const getStudentScoreById: express.RequestHandler = async (req, res) => {
   try {
     const { schoolId, studentId } = req.params;
@@ -146,11 +153,16 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
       .populate('student');
     // const scores = await StudentGradeFormat.find({ school: school._id, student: student._id }).populate('subject');
     // Validate the fetched scores against school's limits
-    const validatedScores = [];
+    const validatedScores: { [key: string]: ValidatedScore } = {};
     for (const score of scores) {
       try {
         await score.validate();
-        validatedScores.push({score, studentName: student.name, studentlastName: student.lastName});
+        // validatedScores({scores: score, studentName: student.name, studentLastName: student.lastName});
+        validatedScores[score._id] = {
+          studentScore: score, 
+          studentName: student.name, 
+          studentLastName: student.lastName
+        };
       } catch (error) {
         // Handle validation error, e.g., log the error or respond with an error message
         console.error('Score validation error:', error);
