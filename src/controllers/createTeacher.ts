@@ -101,7 +101,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
 
     await schoolClass.save();
 
-    return res.status(201).json({ message: 'Teacher created successfully', teacher });
+    return res.status(201).json({ message: 'Teacher created successfully. Login details have been sent to their email.', teacher });
   } catch (error) {
     console.error('Error creating teacher:', error);
     return res.status(500).json({ error: 'Internal server error' });
