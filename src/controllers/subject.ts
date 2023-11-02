@@ -138,17 +138,25 @@ export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => 
           {
               $group: {
                   _id: '$subject', // Group by subject name
-                  classes: {
+                  schoolClass: {
                       $push: '$schoolClass', // Push associated classes into an array
                   },
               },
           },
+          {
+            $project: {
+                subject: '$_id', // Rename the grouped field to 'subject'
+                schoolClass: 1, // Include the schoolClass field
+                _id: 0, // Exclude the default _id field from the output
+            },
+        },
       ]);
 
       // Execute aggregation and populate classes with assigned teachers
       const populatedSubjects = await subjects.exec();
       const options: PopulateOptions[] = [
           { path: 'classes', populate: { path: 'assignedTeacher', model: 'Teacher' } },
+          { path: 'schoolClass', model: 'SchoolClass' }
       ];
       const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
 
@@ -158,6 +166,7 @@ export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => 
       return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 
   // export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {
