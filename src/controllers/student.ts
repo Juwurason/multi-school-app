@@ -202,7 +202,7 @@ function generateStaffId(schoolShortName: string): string {
       }
   
       // Fetch student associated with the school
-      const students = await Student.find({ school: school._id });
+      const students = await Student.find({ school: school._id }).populate('studentClass');
   
       return res.status(200).json(students);
     } catch (error) {

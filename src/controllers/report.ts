@@ -214,14 +214,13 @@ export const updateReportById: express.RequestHandler = async (req: Request, res
       const report: IReport | null = await Report.findOne({ student: student._id });
   
       // Find the student's score
-      const score: IStudentGradeFormat | null = await StudentGradeFormat.findOne({ student: student._id })
+      const score: IStudentGradeFormat[] | null = await StudentGradeFormat.find({ student: student._id })
       .populate('subject');
-      console.log(score);
       
       // If the report or score is not found, return an error
-      if (!report || !score) {
-        return res.status(404).json({ error: 'Report or score not found for the student' });
-      }
+      // if (!report || !score) {
+      //   return res.status(404).json({ error: 'Report or score not found for the student' });
+      // }
   
       const emailContent = `
       <h2>Student Report</h2>
@@ -234,19 +233,24 @@ export const updateReportById: express.RequestHandler = async (req: Request, res
     <th>Total</th>
     <th>Remark</th>
   </tr>
-  <tr>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
+  ${score.map(score => `
+      <tr>
+        <td>${score.subject}</td>
+        <td>${score.ca}</td>
+        <td>${score.exam}</td>
+        <td>${Number(score.ca) + Number(score.exam)}</td>
+        <td>${score.gradeRemark}</td>
+      </tr>
+    `).join('')}
   
   </tr>
         `;
+
+        // console.log(emailContent);
+        
   
       // Send the email to the student
-      // await sendEmail(student.email, emailContent);
+      await sendEmail(student.email, emailContent);
   
       return res.status(200).json({ message: 'Email sent successfully' });
     } catch (error) {
