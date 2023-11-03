@@ -10,6 +10,7 @@ export interface IStudentGradeFormat extends Document {
   exam: string;
   term: string;
   gradeRemark: string;
+  session: string;
 }
 
 const studentGradeSchema: Schema = new Schema<IStudentGradeFormat>(
@@ -29,13 +30,11 @@ const studentGradeSchema: Schema = new Schema<IStudentGradeFormat>(
       ref: 'Subject', // Reference to the Subject model
       required: true,
     },
-    term: {
-      type: String,
-      required: true,
-    },
+    term: String,
     ca: String,
     exam: String,
     gradeRemark: String,
+    session: String
   },
   {
     timestamps: true,

@@ -10,7 +10,7 @@ import GradeFormat, { IGradeFormat } from '../db/grade';
 export const studentGrade: express.RequestHandler = async (req: Request, res: Response) => {
 
   try {
-    const { exam, ca, term } = req.body
+    const { exam, ca } = req.body
     const { schoolId, studentId, subjectId } = req.params;
 
     // Check if the school with the provided schoolId exists
@@ -31,6 +31,9 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
     if (!subject) {
       return res.status(404).json({ error: 'Subject not found' });
     }
+
+    // Fetch term and session from the school object
+    const { term, session } = school;
 
     const existingScore: IStudentGradeFormat | null = await StudentGradeFormat.findOne({
       school: school._id,
@@ -69,11 +72,12 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
     const scoreData: any = {
       exam,
       ca,
-      term,
       gradeRemark,
       school: school._id,
       student: student._id,
-      subject: subject._id
+      subject: subject._id,
+      term,
+      session
     };
 
 
@@ -92,7 +96,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
 export const updateStudentScoreById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
 
-    const { exam, ca, term } = req.body
+    const { exam, ca } = req.body
     const { id } = req.params;
 
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
@@ -112,7 +116,6 @@ export const updateStudentScoreById: express.RequestHandler = async (req: Reques
     // Update other score information
     existingScore.exam = exam;
     existingScore.ca = ca;
-    existingScore.term = term;
 
     // Save the updated score to the database
     await existingScore.save();

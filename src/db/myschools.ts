@@ -14,6 +14,8 @@ export interface ISchool extends Document {
   isValidPassword(password: string): Promise<boolean>;
   schoolLogoUrl?: string;
   website?: string;
+  term?: string;
+  session?: string;
   isEmailVerified: boolean; // Field to track email verification status
   otp?: string; // Field to store OTP (optional, as it's generated)
   otpExpiration?: Date; // Field to store OTP expiration time (optional)
@@ -44,6 +46,8 @@ const myschoolSchema: Schema = new Schema<ISchool>({
   school_category: String,
   schoolLogoUrl: String,
   website: String,
+  term: String,
+  session: String,
   isEmailVerified: {
     type: Boolean,
     default: false, // New teachers are not verified by default

@@ -214,44 +214,39 @@ export const updateReportById: express.RequestHandler = async (req: Request, res
       const report: IReport | null = await Report.findOne({ student: student._id });
   
       // Find the student's score
-      const score: IStudentGradeFormat | null = await StudentGradeFormat.findOne({ student: student._id });
-  
+      const score: IStudentGradeFormat | null = await StudentGradeFormat.findOne({ student: student._id })
+      .populate('subject');
+      console.log(score);
+      
       // If the report or score is not found, return an error
       if (!report || !score) {
         return res.status(404).json({ error: 'Report or score not found for the student' });
       }
   
-      // Format the data (customize this according to your needs)
       const emailContent = `
-      <h2>Student Report and Score</h2>
-      <table border="1">
-        <tr>
-          <th>Category</th>
-          <th>Value</th>
-        </tr>
-        <tr>
-          <td>Present No</td>
-          <td>${report.presentNo}</td>
-        </tr>
-        <tr>
-          <td>Absent No</td>
-          <td>${report.absentNo}</td>
-        </tr>
-        <!-- Add more report fields as needed -->
-        <tr>
-          <td>CA</td>
-          <td>${score.ca}</td>
-        </tr>
-        <tr>
-          <td>Exam</td>
-          <td>${score.exam}</td>
-        </tr>
-        <!-- Add more score fields as needed -->
-      </table>
-    `;
+      <h2>Student Report</h2>
+
+<table>
+  <tr>
+    <th>Subject</th>
+    <th>CA</th>
+    <th>Exam</th>
+    <th>Total</th>
+    <th>Remark</th>
+  </tr>
+  <tr>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  
+  </tr>
+        `;
   
       // Send the email to the student
-      await sendEmail(student.email, emailContent);
+      // await sendEmail(student.email, emailContent);
   
       return res.status(200).json({ message: 'Email sent successfully' });
     } catch (error) {

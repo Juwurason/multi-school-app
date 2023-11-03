@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import Subject, { ISubject } from '../db/subject';
 import mySchool, { ISchool } from '../db/myschools';
 import { isValidObjectId, Aggregate, PopulateOptions } from 'mongoose'
+import mongoose, { Types } from 'mongoose';
 
 
 interface CreateSubjectRequest {
@@ -150,6 +151,28 @@ export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => 
                 _id: 0, // Exclude the default _id field from the output
             },
         },
+        // {
+        //   $match: { school: school._id },
+        // },
+        // {
+        //   $group: {
+        //     _id: {
+        //       subjectId: '$_id', // Include the unique subject ID in the grouped result
+        //       subjectName: '$subject', // Group by subject name
+        //     },
+        //     schoolClass: {
+        //       $push: '$schoolClass', // Push associated classes into an array
+        //     },
+        //   },
+        // },
+        // {
+        //   $project: {
+        //     subjectId: '$_id.subjectId', // Extract subject ID from the grouped result
+        //     subject: '$_id.subjectName', // Rename the grouped field to 'subject'
+        //     schoolClass: 1, // Include the schoolClass field
+        //     _id: 0, // Exclude the default _id field from the output
+        //   },
+        // },
       ]);
 
       // Execute aggregation and populate classes with assigned teachers
@@ -309,4 +332,6 @@ export const createSubject: express.RequestHandler = async (req: Request, res: R
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
 

@@ -275,7 +275,7 @@ export const register = async (req: Request, res: Response) => {
   export const updateSchoolById: express.RequestHandler = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { name, address, phoneNumber, city, state, role, school_category, website } = req.body;
+      const { name, address, phoneNumber, city, state, role, school_category, website, term, session } = req.body;
       
       // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
       if (!isValidObjectId(id)) {
@@ -330,6 +330,8 @@ export const register = async (req: Request, res: Response) => {
       existingSchool.role = role;
       existingSchool.school_category = school_category;
       existingSchool.website = website;
+      existingSchool.term = term;
+      existingSchool.session = session;
   
       // Save the updated teacher to the database
       await existingSchool.save();
