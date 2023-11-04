@@ -67,219 +67,131 @@ export const subject: express.RequestHandler = async (req: Request, res: Respons
   }
 };
 
-// export const subject: express.RequestHandler = async (req: Request, res: Response) => {
-//   try {
-//     const { subjectNames, schoolClassIds } = req.body;
-//     const { schoolId } = req.params;
 
-//     // Check if subjectNames is defined and is an array, otherwise fetch all subjects for the school
-//     const subjectsToCreate = subjectNames && Array.isArray(subjectNames) ? subjectNames : [];
-
-//     // If schoolClassIds are not provided or not an array, fetch all school class IDs for the school
-//     const classesToAssign = schoolClassIds && Array.isArray(schoolClassIds) ? schoolClassIds : await SchoolClass.find({ school: schoolId }).select('_id');
-
-//     const school: ISchool | null = await mySchool.findById(schoolId);
-
-//     if (!school) {
-//       return res.status(404).json({ error: 'School not found' });
-//     }
-
-//     const createdSubjects: ISubject[] = [];
-
-//     // Loop through subjects and create each subject for all specified classes
-//     for (const subjectName of subjectsToCreate) {
-//       for (const classId of classesToAssign) {
-//         // Check if a subject with the same name already exists for the school and specified class
-//         const existingSubject: ISubject | null = await Subject.findOne({
-//           school: schoolId,
-//           subject: subjectName,
-//           schoolClass: classId,
-//         });
-
-//         if (existingSubject) {
-//           // If the subject already exists for the specified class, skip it and return an error
-//           return res.status(400).json({ error: `Subject '${subjectName}' already exists for this school and class` });
-//         }
-
-//         // Create and save the new subject
-//         const newSubject: ISubject = new Subject({
-//           school: schoolId,
-//           subject: subjectName,
-//           schoolClass: classId,
-//         });
-
-//         const savedSubject = await newSubject.save();
-//         createdSubjects.push(savedSubject);
-//       }
-//     }
-
-//     return res.status(201).json({ message: 'Subjects created successfully', subjects: createdSubjects });
-//   } catch (error) {
-//     console.error('Error creating subjects:', error);
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
 
 export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {
   try {
-      const { schoolId } = req.params;
+    const { schoolId } = req.params;
 
-      // Check if the school with the provided schoolId exists
-      const school = await mySchool.findById(schoolId);
+    // Check if the school with the provided schoolId exists
+    const school = await mySchool.findById(schoolId);
 
-      if (!school) {
-          return res.status(404).json({ error: 'School not found' });
-      }
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
 
-      // Use aggregation framework to group subjects by their names and populate associated classes
-      const subjects: Aggregate<any[]> = Subject.aggregate([
-          {
-              $match: { school: school._id },
+    // Use aggregation framework to group subjects by their names and populate associated classes
+    const subjects: Aggregate<any[]> = Subject.aggregate([
+      {
+        $match: { school: school._id },
+      },
+      {
+        $group: {
+          _id: '$subject', // Group by subject name
+          schoolClass: {
+            $push: '$schoolClass', // Push associated classes into an array
           },
-          {
-              $group: {
-                  _id: '$subject', // Group by subject name
-                  schoolClass: {
-                      $push: '$schoolClass', // Push associated classes into an array
-                  },
-              },
-          },
-          {
-            $project: {
-                subject: '$_id', // Rename the grouped field to 'subject'
-                schoolClass: 1, // Include the schoolClass field
-                _id: 0, // Exclude the default _id field from the output
-            },
         },
-        // {
-        //   $match: { school: school._id },
-        // },
-        // {
-        //   $group: {
-        //     _id: {
-        //       subjectId: '$_id', // Include the unique subject ID in the grouped result
-        //       subjectName: '$subject', // Group by subject name
-        //     },
-        //     schoolClass: {
-        //       $push: '$schoolClass', // Push associated classes into an array
-        //     },
-        //   },
-        // },
-        // {
-        //   $project: {
-        //     subjectId: '$_id.subjectId', // Extract subject ID from the grouped result
-        //     subject: '$_id.subjectName', // Rename the grouped field to 'subject'
-        //     schoolClass: 1, // Include the schoolClass field
-        //     _id: 0, // Exclude the default _id field from the output
-        //   },
-        // },
-      ]);
+      },
+      {
+        $project: {
+          subject: '$_id', // Rename the grouped field to 'subject'
+          schoolClass: 1, // Include the schoolClass field
+          _id: 0, // Exclude the default _id field from the output
+        },
+      },
 
-      // Execute aggregation and populate classes with assigned teachers
-      const populatedSubjects = await subjects.exec();
-      const options: PopulateOptions[] = [
-          { path: 'schoolClass', populate: { path: 'assignedTeacher', model: 'Teacher' } },
-          { path: 'schoolClass', model: 'SchoolClass' }
-      ];
-      const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
+    ]);
 
-      return res.status(200).json(subjectsWithPopulatedClasses);
+    // Execute aggregation and populate classes with assigned teachers
+    const populatedSubjects = await subjects.exec();
+    const options: PopulateOptions[] = [
+      { path: 'schoolClass', populate: { path: 'assignedTeacher', model: 'Teacher' } },
+      { path: 'schoolClass', model: 'SchoolClass' }
+    ];
+    const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
+
+    return res.status(200).json(subjectsWithPopulatedClasses);
   } catch (error) {
-      console.error('Error fetching subject by schoolId:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching subject by schoolId:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 
+export const getSubjectByClassId: express.RequestHandler = async (req: Request, res: Response) => {
+  try {
+    const { classId, schoolId } = req.params;
 
-  // export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => {
-  //   try {
-  //     const { schoolId } = req.params;
-  
-  //     // Check if the school with the provided schoolId exists
-  //     const school = await mySchool.findById(schoolId);
-  
-  //     if (!school) {
-  //       return res.status(404).json({ error: 'School not found' });
-  //     }
-  
-  //     // Fetch Subject associated with the school
-  //     const subject = await Subject.find({ school: school._id })
-  //     .populate({
-  //       path: 'schoolClass',
-  //       populate: { path: 'assignedTeacher', model: 'Teacher' }
-  //     });
-  
-  //     return res.status(200).json(subject);
-  //   } catch (error) {
-  //     console.error('Error fetching subject by schoolId:', error);
-  //     return res.status(500).json({ error: 'Internal server error' });
-  //   }
-  // };
+    // Retrieve subjects for the specific school where schoolClass is either null or matches the provided classId
+    const subjects: ISubject[] = await Subject.find({
+      school: schoolId,
+      $or: [
+        { schoolClass: null },
+        { schoolClass: { $exists: false } },
+        { schoolClass: classId }
+      ]
+    }).populate('schoolClass');
 
-  export const getSubjectByClassId: express.RequestHandler = async (req: Request, res: Response) => {
-    try {
-        const { classId, schoolId } = req.params;
-
-        // Retrieve subjects for the specific school where schoolClass is either null or matches the provided classId
-        const subjects: ISubject[] = await Subject.find({
-            school: schoolId,
-            $or: [
-                { schoolClass: null },
-                { schoolClass: { $exists: false } },
-                { schoolClass: classId }
-            ]
-        }).populate('schoolClass');
-
-        return res.status(200).json({ subjects });
-    } catch (error) {
-        console.error('Error fetching subject by classId:', error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
+    return res.status(200).json({ subjects });
+  } catch (error) {
+    console.error('Error fetching subject by classId:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
 
-  export const getSubjectById: express.RequestHandler = async (req, res) => {
-    try {
-      const { id } = req.params;
-  
-      // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
-      if (!isValidObjectId(id)) {
-        return res.status(400).json({ error: 'Invalid class ID' });
-      }
-  
-      const subject: ISubject | null = await Subject.findById(id).populate('schoolClass');
-  
-      if (!subject) {
-        return res.status(404).json({ error: 'Subject not found' });
-      }
-  
-      return res.status(200).json(subject);
-    } catch (error) {
-      console.error('Error fetching subject by Id:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+export const getSubjectById: express.RequestHandler = async (req, res) => {
+  try {
+    const { subject, schoolId } = req.params;
 
-  export const deleteSubjectById: express.RequestHandler = async (req, res) => {
-    try {
-    const { id } = req.params;
+    const school: ISchool | null = await mySchool.findById(schoolId);
 
-    // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
-    if (!isValidObjectId(id)) {
-      return res.status(400).json({ error: 'Invalid teacher ID' });
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
     }
 
-    // Find the subject by ID and delete it
-    const deletedSubject: ISubject | null = await Subject.findByIdAndRemove(id);
+    // const subject: ISubject | null = await Subject.findById(id).populate('schoolClass');
+    const subjecti: ISubject | null = await Subject.findOne({
+      school: school._id,
+      subject: subject
+    });
+
+    if (!subjecti) {
+      return res.status(404).json({ error: 'Subject not found' });
+    }
+
+    return res.status(200).json(subjecti);
+  } catch (error) {
+    console.error('Error fetching subject by Id:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+
+export const deleteSubjectById: express.RequestHandler = async (req, res) => {
+  try {
+    const { subject, schoolId } = req.params;
+
+    const school: ISchool | null = await mySchool.findById(schoolId);
+
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+
+    // Find and delete the subject by schoolId and subject name
+    const deletedSubject = await Subject.findOneAndDelete({
+      school: school._id,
+      subject: subject
+    });
 
     if (!deletedSubject) {
       return res.status(404).json({ error: 'Subject not found' });
     }
 
-    return res.status(200).json({ message: 'Subject deleted successfully' });
+    return res.status(200).json({ message: 'Subject deleted successfully', deletedSubject });
   } catch (error) {
-    console.error('Error deleting Subject by ID:', error);
+    console.error('Error deleting subject:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

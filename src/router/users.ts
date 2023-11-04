@@ -23,7 +23,7 @@ export default (router: express.Router) => {
     router.get('/get_all_teacher-by_school_Id/:schoolId/teachers', passport.authenticate('jwt', { session: false }), getTeachersBySchoolId);
     router.get('/get_all_school-classes-by_school_Id/:schoolId/classes', passport.authenticate('jwt', { session: false }), getSchoolClassBySchoolId);
     router.get('/get_all_school-subjects-by_school_Id/:schoolId/subjects',
-    //  passport.authenticate('jwt', { session: false }),
+     passport.authenticate('jwt', { session: false }),
       getSubjectBySchoolId);
     router.get('/get_all_students-by_school_Id/:schoolId/students', passport.authenticate('jwt', { session: false }), getStudentsBySchoolId);
     router.get('/get_all_news_Letter_by_school_Id/:schoolId/newsLetter', passport.authenticate('jwt', { session: false }), getLetterBySchoolId);
@@ -31,13 +31,13 @@ export default (router: express.Router) => {
     router.get('/get_grade/:schoolId', passport.authenticate('jwt', { session: false }), getGradeFormatsBySchoolId);
     router.get('/get_score/:schoolId', passport.authenticate('jwt', { session: false }), getScoreBySchoolId);
     router.get('/get_class_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolClassById);
-    router.get('/get_subject_byId/:id', passport.authenticate('jwt', { session: false }), getSubjectById);
+    router.get('/get_subject_byId/:subject/:schoolId', passport.authenticate('jwt', { session: false }), getSubjectById);
     router.get('/get_subject_byClassId/:classId/:schoolId', passport.authenticate('jwt', { session: false }), getSubjectByClassId);
     router.get('/get_student_byId/:id', passport.authenticate('jwt', { session: false }), getStudentsById);
     router.get('/get_student_byClassId/:classId', passport.authenticate('jwt', { session: false }), getStudentsByClassId);
     router.get('/get_school_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolById);
     router.post('/delete_teacher/:id', passport.authenticate('jwt', { session: false }), deleteTeacherById);
-    router.post('/delete_subject/:id', passport.authenticate('jwt', { session: false }), deleteSubjectById);
+    router.post('/delete_subject/:subject/:schoolId', passport.authenticate('jwt', { session: false }), deleteSubjectById);
     router.post('/delete_school_class/:id', passport.authenticate('jwt', { session: false }), deleteSchoolClassById);
     router.post('/delete_student/:id', passport.authenticate('jwt', { session: false }), deleteStudentById);
     router.post('/add_teacher/:schoolId/teachers', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), createTeacher);
@@ -50,10 +50,10 @@ export default (router: express.Router) => {
     router.get('/report_details/:reportId', passport.authenticate('jwt', { session: false }), getReportById);
     router.get('/get_student_report/:studentId', passport.authenticate('jwt', { session: false }), getReportsByStudentId);
     router.post('/delete_report/:reportId', passport.authenticate('jwt', { session: false }), deleteReportById);
-    router.post('/add_student_score/:schoolId/:studentId/:subjectId',
-    //  passport.authenticate('jwt', { session: false }),
+    router.post('/add_student_score/:schoolId/:studentId/:subject',
+     passport.authenticate('jwt', { session: false }),
       studentGrade);
-    router.post('/update_student_score/:id', passport.authenticate('jwt', { session: false }), updateStudentScoreById);
+    router.post('/update_student_score/:schoolId/:studentId/:subject', passport.authenticate('jwt', { session: false }), updateStudentScoreById);
     router.get('/get_student_score/:schoolId/:studentId', passport.authenticate('jwt', { session: false }), getStudentScoreById);
     router.get('/get_student_score_byId/:id', passport.authenticate('jwt', { session: false }), getScoresById);
     router.get('/get_student_score_&_report/:studentId', passport.authenticate('jwt', { session: false }), getReportAndScoreByEmail);

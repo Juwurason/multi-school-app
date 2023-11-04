@@ -105,7 +105,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
 export const updateStudentScoreById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
     const { exam, ca } = req.body;
-    const { schoolId, studentId, subjectName } = req.params;
+    const { schoolId, studentId, subject } = req.params;
 
     // Check if the school with the provided schoolId exists
     const school: ISchool | null = await mySchool.findById(schoolId);
@@ -115,12 +115,12 @@ export const updateStudentScoreById: express.RequestHandler = async (req: Reques
     }
 
     // Check if the specified subject exists for the school
-    const subject: ISubject | null = await Subject.findOne({
+    const subjectName: ISubject | null = await Subject.findOne({
       school: school._id,
-      subject: subjectName
+      subject: subject
     });
 
-    if (!subject) {
+    if (!subjectName) {
       return res.status(404).json({ error: 'Subject not found for the school' });
     }
 
@@ -146,7 +146,7 @@ export const updateStudentScoreById: express.RequestHandler = async (req: Reques
     score.exam = exam;
     score.ca = ca;
 
-    // Recalculate gradeRemark based on new scores and existing grade ranges (if needed)
+   
     // Recalculate gradeRemark based on new scores and existing grade ranges
     const grades: IGradeFormat[] | null = await GradeFormat.find({
       school: school._id
