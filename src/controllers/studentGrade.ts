@@ -11,7 +11,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
 
   try {
     const { exam, ca } = req.body
-    const { schoolId, studentId, subjectId } = req.params;
+    const { schoolId, studentId, subject } = req.params;
 
     // Check if the school with the provided schoolId exists
     const school: ISchool | null = await mySchool.findById(schoolId);
@@ -26,10 +26,19 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    const subject: ISubject | null = await Subject.findById(subjectId);
+    // const subject: ISubject | null = await Subject.findById(subjectId);
 
-    if (!subject) {
-      return res.status(404).json({ error: 'Subject not found' });
+    // if (!subject) {
+    //   return res.status(404).json({ error: 'Subject not found' });
+    // }
+
+    const subjectName: ISubject | null = await Subject.findOne({
+      school: school._id,
+      subject: subject
+    });
+
+    if (!subjectName) {
+      return res.status(404).json({ error: 'Subject not found for the school' });
     }
 
     // Fetch term and session from the school object
@@ -38,7 +47,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
     const existingScore: IStudentGradeFormat | null = await StudentGradeFormat.findOne({
       school: school._id,
       student: student._id,
-      subject: subject._id,
+      subject: subjectName,
     });
 
     if (existingScore) {
@@ -75,7 +84,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
       gradeRemark,
       school: school._id,
       student: student._id,
-      subject: subject._id,
+      subject: subjectName,
       term,
       session
     };
@@ -95,34 +104,83 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
 
 export const updateStudentScoreById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
+    const { exam, ca } = req.body;
+    const { schoolId, studentId, subjectName } = req.params;
 
-    const { exam, ca } = req.body
-    const { id } = req.params;
+    // Check if the school with the provided schoolId exists
+    const school: ISchool | null = await mySchool.findById(schoolId);
 
-    // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
-    if (!isValidObjectId(id)) {
-      return res.status(400).json({ error: 'Invalid ID' });
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
     }
 
+    // Check if the specified subject exists for the school
+    const subject: ISubject | null = await Subject.findOne({
+      school: school._id,
+      subject: subjectName
+    });
 
-    const existingScore: IStudentGradeFormat | null = await StudentGradeFormat.findById(id);
-
-    if (!existingScore) {
-      return res.status(404).json({ error: 'grade not found' });
+    if (!subject) {
+      return res.status(404).json({ error: 'Subject not found for the school' });
     }
 
+    // Check if the student with the provided studentId exists
+    const student: IStudent | null = await Student.findById(studentId);
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Check if the student's grade for the specified subject already exists
+    let score: IStudentGradeFormat | null = await StudentGradeFormat.findOne({
+      school: school._id,
+      student: student._id,
+      subject: subjectName
+    });
+
+    if (!score) {
+      return res.status(404).json({ error: 'Student grade not found for the specified subject' });
+    }
+
+    // Update the student's grade with the new exam and ca scores
+    score.exam = exam;
+    score.ca = ca;
+
+    // Recalculate gradeRemark based on new scores and existing grade ranges (if needed)
+    // Recalculate gradeRemark based on new scores and existing grade ranges
+    const grades: IGradeFormat[] | null = await GradeFormat.find({
+      school: school._id
+    });
+
+    if (!grades) {
+      return res.status(500).json({ error: 'Grade format not found for the school' });
+    }
+
+    let gradeRemark: string | null = null;
+
+    // Iterate through all grades to find a match for studentTotalScore
+    const studentTotalScore: number = parseFloat(ca) + parseFloat(exam);
+    for (const grade of grades) {
+      if (studentTotalScore >= grade.miniScore && studentTotalScore <= grade.maxScore) {
+        gradeRemark = grade.grade;
+        break; // Exit loop once a matching grade is found
+      }
+    }
+
+    if (!gradeRemark) {
+      gradeRemark = 'N/A'; // Assign a default grade if no matching grade range is found
+    }
+
+    // Update gradeRemark in the score object
+    score.gradeRemark = gradeRemark;
 
 
-    // Update other score information
-    existingScore.exam = exam;
-    existingScore.ca = ca;
+    // Save the updated student's grade
+    await score.save();
 
-    // Save the updated score to the database
-    await existingScore.save();
-
-    return res.status(200).json({ message: 'Score updated successfully', updatedScore: existingScore });
+    return res.status(200).json({ message: 'Student grade updated successfully', score });
   } catch (error) {
-    console.error('Error updating score by ID:', error);
+    console.error('Error updating student grade:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

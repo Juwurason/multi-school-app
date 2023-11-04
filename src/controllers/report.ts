@@ -233,19 +233,20 @@ export const updateReportById: express.RequestHandler = async (req: Request, res
     <th>Total</th>
     <th>Remark</th>
   </tr>
-  ${score.map(score => `
+  ${score?.map((scores, i) => `
       <tr>
-        <td>${score.subject}</td>
-        <td>${score.ca}</td>
-        <td>${score.exam}</td>
-        <td>${Number(score.ca) + Number(score.exam)}</td>
-        <td>${score.gradeRemark}</td>
+        <td>${scores.subject}</td>
+        <td>${scores.ca}</td>
+        <td>${scores.exam}</td>
+        <td>${Number(scores.ca) + Number(scores.exam)}</td>
+        <td>${scores.gradeRemark}</td>
       </tr>
     `).join('')}
   
   </tr>
         `;
-
+        // staffDuration?.attendance?.map((activity, i) => (
+        //   <div className='col-sm-6'>
         // console.log(emailContent);
         
   
