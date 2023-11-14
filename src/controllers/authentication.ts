@@ -63,7 +63,7 @@ let DateCreat = new Date()
         const expiry = new Date(DateCreat.getTime() + 10 * 60 * 1000);
         let otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        let ot:any;
+     
 // Step 2 - Confirm Password
 export const confirmPassword = async (req: express.Request, res: express.Response) => {
   try {
@@ -162,7 +162,22 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
   }
 };
 
+export const forgetPassword = async (req: express.Request, res: express.Response) => {
 
+  try {
+    const { email } = req.body;
+    const existingTeacher = await Teacher.findOne({ email });
+    const existingSchool = await mySchool.findOne({ email });
+
+    if (!existingTeacher && !existingSchool) {
+      return res.status(404).json({ error: 'Email not found' });
+    }
+
+  } catch (error) {
+    
+  }
+
+}
   
 export const register = async (req: Request, res: Response) => {
     try {
@@ -275,7 +290,7 @@ export const register = async (req: Request, res: Response) => {
   export const updateSchoolById: express.RequestHandler = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { name, address, phoneNumber, city, state, role, school_category, website, term, session } = req.body;
+      const { name, address, phoneNumber, city, state, role, school_category, website, term, session, presentNo, absentNo } = req.body;
       
       // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
       if (!isValidObjectId(id)) {
@@ -332,6 +347,9 @@ export const register = async (req: Request, res: Response) => {
       existingSchool.website = website;
       existingSchool.term = term;
       existingSchool.session = session;
+      existingSchool.presentNo = presentNo;
+      existingSchool.absentNo = absentNo;
+
   
       // Save the updated teacher to the database
       await existingSchool.save();

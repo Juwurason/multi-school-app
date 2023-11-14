@@ -15,6 +15,8 @@ export interface IReport extends Document {
   publicSpeack: string;
   drawingPainting: string;
   sportGames: string;
+  term: string;
+  session: string;
   classTeacher: string;
   headTeacher: string;
 }
@@ -37,6 +39,8 @@ const report: Schema = new Schema<IReport>({
   publicSpeack: String,
   drawingPainting: String,
   sportGames: String,
+  term: String,
+  session: String,
   classTeacher: String,
   headTeacher: String,
  

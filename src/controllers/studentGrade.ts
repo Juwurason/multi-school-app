@@ -48,10 +48,12 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
       school: school._id,
       student: student._id,
       subject: subjectName,
+      term: term,
+      session: session
     });
 
     if (existingScore) {
-      return res.status(400).json({ error: 'Score already exists for this student and subject' });
+      return res.status(400).json({ error: 'Score already exists for this student and subject this term' });
     }
 
     const studentTotalScore: number = parseFloat(ca) + parseFloat(exam);
