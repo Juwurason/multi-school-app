@@ -126,6 +126,12 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
       return res.status(404).json({ error: 'Teacher not found' });
     }
 
+    const schoolClass = await SchoolClass.findById(teacherClass);
+
+    if (!schoolClass) {
+      return res.status(404).json({ error: 'School class not found' });
+    }
+
     // Check if a new image is provided in the request
     if (req.file) {
       // Check if there is an existing profile picture
@@ -173,6 +179,10 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
 
     // Save the updated teacher to the database
     await existingTeacher.save();
+
+    schoolClass.assignedTeacher = existingTeacher._id; // Use the teacher's ObjectId
+
+    await schoolClass.save();
 
     return res.status(200).json({ message: 'Profile updated successfully', updatedTeacher: existingTeacher });
   } catch (error) {
