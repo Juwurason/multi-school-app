@@ -203,8 +203,8 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
-
-    const scores = await StudentGradeFormat.find({ school: school._id, student: student._id })
+    const { term, session } = school;
+    const scores = await StudentGradeFormat.find({ school: school._id, student: student._id, term: term, session: session })
       .populate('subject')
       .populate('student');
     // const scores = await StudentGradeFormat.find({ school: school._id, student: student._id }).populate('subject');

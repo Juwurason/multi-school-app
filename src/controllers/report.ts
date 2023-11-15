@@ -6,6 +6,7 @@ import { isValidObjectId } from 'mongoose';
 import StudentGradeFormat, { IStudentGradeFormat } from '../db/studentGrade';
 import Report, { IReport } from '../db/report';
 import mySchool, { ISchool } from '../db/myschools';
+import TermSession, { ITermSession } from '../db/termSession';
 import * as pdf from 'html-pdf';
 
 export const report: express.RequestHandler = async (req: Request, res: Response) => {
@@ -22,7 +23,6 @@ export const report: express.RequestHandler = async (req: Request, res: Response
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    
 
     const school: ISchool | null = await mySchool.findById(student.school);
 

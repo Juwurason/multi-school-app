@@ -13,6 +13,7 @@ export interface ISchool extends Document {
   school_category?: string;
   isValidPassword(password: string): Promise<boolean>;
   schoolLogoUrl?: string;
+  letterHead?: string;
   website?: string;
   term?: string;
   presentNo?: string;
@@ -47,6 +48,7 @@ const myschoolSchema: Schema = new Schema<ISchool>({
   state: String,
   school_category: String,
   schoolLogoUrl: String,
+  letterHead: String,
   website: String,
   term: String,
   session: String,

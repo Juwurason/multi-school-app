@@ -20,6 +20,7 @@ import * as path from 'path';
 
 import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
 import {Storage, Bucket_url} from '../config/firebase';
+import TermSession, { ITermSession } from '../db/termSession';
 
 
 // Step 1 - Verify Email
@@ -264,7 +265,8 @@ export const register = async (req: Request, res: Response) => {
       res.status(500).json({ message: 'An error occurred during registration.' });
     }
   }
-  
+
+
   export const getSchoolById: express.RequestHandler = async (req, res) => {
     try {
       const { id } = req.params;
@@ -290,7 +292,7 @@ export const register = async (req: Request, res: Response) => {
   export const updateSchoolById: express.RequestHandler = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { name, address, phoneNumber, city, state, role, school_category, website, term, session, presentNo, absentNo } = req.body;
+      const { name, address, phoneNumber, city, state, role, school_category, website, presentNo, absentNo } = req.body;
       
       // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
       if (!isValidObjectId(id)) {
@@ -345,8 +347,6 @@ export const register = async (req: Request, res: Response) => {
       existingSchool.role = role;
       existingSchool.school_category = school_category;
       existingSchool.website = website;
-      existingSchool.term = term;
-      existingSchool.session = session;
       existingSchool.presentNo = presentNo;
       existingSchool.absentNo = absentNo;
 
@@ -361,3 +361,271 @@ export const register = async (req: Request, res: Response) => {
     }
   };
 
+  export const letterHead: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { schoolId } = req.params;
+      
+      // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
+      if (!isValidObjectId(schoolId)) {
+        return res.status(400).json({ error: 'Invalid school ID' });
+      }
+      
+      // Find the school by ID
+      const existingSchool: ISchool | null = await mySchool.findById(schoolId);
+  
+      if (!existingSchool) {
+        return res.status(404).json({ error: 'School not found' });
+      }
+  
+      // Check if a school Logo is provided
+      if (req.file) {
+        // Check if there is an existing profile picture
+        if (existingSchool.letterHead) {
+          // Construct the reference to the existing logo
+          const fileRefToDelete = ref(Storage, existingSchool.letterHead);
+          // console.log('Attempting to delete:', fileRefToDelete.fullPath);
+          try {
+            // Now, you can safely delete the object
+            await deleteObject(fileRefToDelete);
+            // console.log('Deleted successfully');
+          } catch (error) {
+            console.error('Error deleting existing image:', error);
+            // Handle the error as needed
+          }
+        }
+      
+        // Upload the new image
+        const file = req.file;
+        const fileName = `${uuidv4()}${path.extname(file.originalname)}`;
+        const folderName = 'My-School-app';
+        const bucketRef = ref(Storage, Bucket_url);
+        const fileRef = ref(bucketRef, `${folderName}/${fileName}`);
+        await uploadBytes(fileRef, req.file.buffer, {
+          contentType: req.file.mimetype,
+        });
+      
+        // Update the profile picture URL with the URL of the new image
+        const fileUrl = await getDownloadURL(fileRef);
+        existingSchool.letterHead = fileUrl;
+      }
+  
+      
+
+  
+      // Save the updated teacher to the database
+      await existingSchool.save();
+  
+      return res.status(200).json({ message: 'School updated successfully', updatedSchool: existingSchool });
+    } catch (error) {
+      console.error('Error updating school by ID:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  export const addTermAndSession: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { term, session } = req.body;
+      const { schoolId } = req.params;
+  
+      // Find the school by ID
+      const school: ISchool | null = await mySchool.findById(schoolId);
+  
+      // If the school is not found, return a 404 error
+      if (!school) {
+        return res.status(404).json({ error: 'School not found' });
+      }
+  
+      const existingTermAndSession: ITermSession | null = await TermSession.findOne({
+      school: school._id,
+      term: term,
+      session: session
+      })
+
+
+      // Check if the term and session already exist
+
+      if (existingTermAndSession) {
+        return res.status(400).json({ error: 'This term and session already exist for this School' });
+      }
+      
+  
+       // Create a new instance of the TermSession model
+    const newTermAndSession = new TermSession({
+      school: school._id,
+      term: term,
+      session: session,
+    });
+
+    // Save the new instance to the database
+    await newTermAndSession.save();
+
+      // Update the currentTerm and currentSession in the school model
+      school.term = term;
+      school.session = session;
+  
+      // Save the updated school to the database
+      await school.save();
+  
+    return res.status(201).json({ message: 'Term and session added successfully' });
+    } catch (error) {
+      console.error('Error adding term and session:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  // export const editTermAndSession: express.RequestHandler = async (req: Request, res: Response) => {
+  //   try {
+  //     const { term, session } = req.body;
+  //     const { schoolId } = req.params;
+  
+  //     // Find the school by ID
+  //     const school: ISchool | null = await mySchool.findById(schoolId);
+  
+  //     // If the school is not found, return a 404 error
+  //     if (!school) {
+  //       return res.status(404).json({ error: 'School not found' });
+  //     }
+  
+  //     // Find the existing term and session for the school
+  //     const existingTermAndSession: ITermSession | null = await TermSession.findOne({
+  //       school: school._id,
+  //     });
+  
+  //     // If the term and session do not exist, return a 404 error
+  //     if (!existingTermAndSession) {
+  //       return res.status(404).json({ error: 'Term and session not found for this school' });
+  //     }
+  
+  //     // Update the term and session in the existing TermSession
+  //     existingTermAndSession.term = term;
+  //     existingTermAndSession.session = session;
+  
+  //     // Save the updated TermSession to the database
+  //     await existingTermAndSession.save();
+  
+  //     // Update the term and session in the school model
+  //     school.term = term;
+  //     school.session = session;
+  
+  //     // Save the updated school to the database
+  //     await school.save();
+  
+  //     return res.status(200).json({ message: 'Term and session updated successfully' });
+  //   } catch (error) {
+  //     console.error('Error editing term and session:', error);
+  //     return res.status(500).json({ error: 'Internal server error' });
+  //   }
+  // };
+
+  export const editTermAndSession: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { term, session } = req.body;
+      const { id } = req.params;
+  
+      // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid term session ID' });
+      }
+  
+      // Find the term session by ID
+      const existingTermAndSession: ITermSession | null = await TermSession.findById(id);
+  
+      if (!existingTermAndSession) {
+        return res.status(404).json({ error: 'Term session not found' });
+      }
+  
+      // Update the term and session in the existing TermSession
+      existingTermAndSession.term = term;
+      existingTermAndSession.session = session;
+  
+      // Save the updated TermSession to the database
+      await existingTermAndSession.save();
+  
+      // Update the term and session in the school model (assuming you have a school reference in the term session)
+      const school: ISchool | null = await mySchool.findById(existingTermAndSession.school);
+  
+      if (school) {
+        school.term = term;
+        school.session = session;
+  
+        // Save the updated school to the database
+        await school.save();
+      }
+  
+      return res.status(200).json({ message: 'Term and session updated successfully' });
+    } catch (error) {
+      console.error('Error editing term and session:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  export const getTermAndSessionById: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+  
+      // Find the TermSession by ID
+      const termSession: ITermSession | null = await TermSession.findById(id);
+  
+      // If the TermSession is not found, return a 404 error
+      if (!termSession) {
+        return res.status(404).json({ error: 'Term and session not found' });
+      }
+  
+      return res.status(200).json({ termSession });
+    } catch (error) {
+      console.error('Error getting term and session by ID:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  export const getTermSessionBySchoolId: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { schoolId } = req.params;
+  
+      // Find the school by ID
+      const school: ISchool | null = await mySchool.findById(schoolId);
+  
+      // If the school is not found, return a 404 error
+      if (!school) {
+        return res.status(404).json({ error: 'School not found' });
+      }
+  
+      // Find the term and session associated with the school
+      const termSession: ITermSession | null = await TermSession.findOne({ school: school._id });
+  
+      // If the term and session are not found, return a 404 error
+      if (!termSession) {
+        return res.status(404).json({ error: 'Term and session not found for this school' });
+      }
+  
+      return res.status(200).json({ termSession });
+    } catch (error) {
+      console.error('Error getting term and session by school ID:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+
+  export const deleteTermSessionById: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+  
+      // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ error: 'Invalid term session ID' });
+      }
+  
+      // Find and delete the term session by ID
+      const deletedTermSession: ITermSession | null = await TermSession.findByIdAndDelete(id);
+  
+      // If the term session is not found, return a 404 error
+      if (!deletedTermSession) {
+        return res.status(404).json({ error: 'Term session not found' });
+      }
+  
+      return res.status(200).json({ message: 'Term session deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting term session by ID:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
