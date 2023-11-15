@@ -5,6 +5,7 @@ import StudentGradeFormat, { IStudentGradeFormat } from '../db/studentGrade';
 import Student, { IStudent } from '../db/student';
 import Subject, { ISubject } from '../db/subject';
 import GradeFormat, { IGradeFormat } from '../db/grade';
+import SchoolClass, { ISchoolClass } from '../db/schoolClass';
 
 
 export const studentGrade: express.RequestHandler = async (req: Request, res: Response) => {
@@ -273,4 +274,59 @@ export const deleteStudentScoreById: express.RequestHandler = async (req, res) =
   }
 };
 
+// export const getClassGradeAverage: express.RequestHandler = async (req: Request, res: Response) => {
+//   try {
+//     const { classId } = req.params;
 
+//     // Find the class by ID
+//     const schoolClass: ISchoolClass | null = await SchoolClass.findById(classId);
+
+//     if (!schoolClass) {
+//       return res.status(404).json({ error: 'Class not found' });
+//     }
+
+//     // Get all subjects for the class
+//     const subjects: ISubject[] | null = await Subject.find({ schoolClass: schoolClass._id });
+
+//     if (!subjects || subjects.length === 0) {
+//       return res.status(404).json({ error: 'No subjects found for the class' });
+//     }
+
+//     // Calculate the grade average for each subject
+//     const subjectAverages: { [key: string]: number } = {};
+
+//     for (const subject of subjects) {
+//       // Find scores for the subject
+//       const scores: IStudentGradeFormat[] | null = await StudentGradeFormat.find({
+//         subject: subject._id,
+//         studentClass: schoolClass._id,
+//       });
+
+//       if (scores && scores.length > 0) {
+//         // Calculate average
+//         const average: number =
+//           scores.reduce((total: number, score: typeof scores[0]) => total + (score.ca + score.exam), 0) / scores.length;
+      
+//         // Determine grade based on the average (You'll need to implement this part based on your grading system)
+//         const grade: string = determineGrade(average); // Implement determineGrade function
+      
+//         // Store the average and grade in the subjectAverages object
+//         subjectAverages[subject.subject] = average;
+//       }
+      
+      
+//     }
+
+//     return res.status(200).json({ subjectAverages });
+//   } catch (error) {
+//     console.error('Error getting class grade average:', error);
+//     return res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+// // Implement the determineGrade function based on your grading system
+// function determineGrade(average: number) {
+//   // Your logic to determine the grade based on the average
+//   // Example: if (average >= 90) return 'A';
+//   // Adjust the logic according to your grading scale
+// }

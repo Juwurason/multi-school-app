@@ -60,7 +60,9 @@ export default (router: express.Router) => {
       passport.authenticate('jwt', { session: false }),
       studentGrade);
     router.post('/update_student_score/:schoolId/:studentId/:subject', passport.authenticate('jwt', { session: false }), updateStudentScoreById);
-    router.get('/get_student_score/:schoolId/:studentId', passport.authenticate('jwt', { session: false }), getStudentScoreById);
+    router.get('/get_student_score/:schoolId/:studentId', 
+    passport.authenticate('jwt', { session: false }),
+     getStudentScoreById);
     router.get('/get_student_score_byId/:id', passport.authenticate('jwt', { session: false }), getScoresById);
     router.get('/get_student_score_&_report/:studentId/:term/:session', passport.authenticate('jwt', { session: false }), getReportAndScoreByEmail);
     router.post('/delete_student_score_byId/:id', passport.authenticate('jwt', { session: false }), deleteStudentScoreById);

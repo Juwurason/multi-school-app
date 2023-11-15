@@ -182,31 +182,6 @@ export const getReportAndScoreByEmail: express.RequestHandler = async (req: Requ
   }
 };
 
-export async function sendEmail(email: string, emailContent: string): Promise<void> {
-  try {
-
-    const name: string = 'MySchoolApp';
-    const subject: string = 'Student Report';
-    //   const emailContent = fileUrl
-    //         ? `<p>${content}</p><img src="${fileUrl}" alt="Image"/>`
-    //         : `<p>${content}</p>`;
-
-    const response = await axios.post('https://mail.onrender.com/sendmail', {
-      name: name,
-      mail: email,
-      subject: subject,
-      html: emailContent
-    });
-
-    if (response.status === 200) {
-      console.log('Message sent successfully');
-    } else {
-      console.error('Failed to send message');
-    }
-  } catch (error) {
-    console.error('Error sending message:', error);
-  }
-}
 
 interface ScoreWithPopulatedSubject {
   _id: string; // assuming _id is a string, adjust it based on your schema
