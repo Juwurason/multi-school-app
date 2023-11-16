@@ -215,7 +215,7 @@ export const sendReportAndScoreByEmail: express.RequestHandler = async (req: Req
       return res.status(404).json({ error: 'School not found' });
     }
 
-    const schoolLogoUrl: string | undefined = school?.schoolLogoUrl;
+    const schoolLogoUrl: string | undefined = school?.letterHead;
     // Find the student's report
     const report: IReport | null = await Report.findOne({ student: student._id, term: term, session: session });
     // console.log(report);
@@ -229,10 +229,26 @@ export const sendReportAndScoreByEmail: express.RequestHandler = async (req: Req
     const score: ScoreWithPopulatedSubject[] | null = await StudentGradeFormat.find({ student: student._id, term: term, session: session })
       .populate('subject')
       .lean();
+  //     <div style="background-image: url(letterHead.jpg); background-repeat: no-repeat; height: 100vh; width: 100%; background-size: cover; display: flex; justify-content: center; align-items: center;">
 
+  //     <div style=" padding: 20px; border-radius: 10px; width: 100%;">
+  //         <h3>Student Report Scores</h3>
+  //         <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+  //             <tr style="background-color: #f2f2f2;">
+  //                 <th>Subject</th>
+  //                 <th>CA</th>
+  //                 <th>Exam</th>
+  //                 <th>Total</th>
+  //                 <th>Remark</th>
+  //             </tr>
+  //             <!-- Insert your generated score rows here -->
+  //         </table>
+  //     </div>
+  // </div>
     const emailContent = `
-      <img src="${schoolLogoUrl}" alt="School Logo" style="width: 100px; height: 100px;">
-      <h2>Student Report Scores</h2>
+    <div style="background-image: url(${schoolLogoUrl}); background-repeat: no-repeat; height: 100vh; width: 100%; background-size: cover; display: flex; justify-content: center; align-items: center;">
+      <div style=" padding: 20px; border-radius: 10px; width: 100%;">
+      <h3>Student Report Scores</h3>
       <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; width: 100%;">
         <tr style="background-color: #f2f2f2;">
           <th>Subject</th>
@@ -251,8 +267,9 @@ export const sendReportAndScoreByEmail: express.RequestHandler = async (req: Req
           </tr>
         `).join('')}
       </table>
+      </div>
 
-      <h2>Student Report  Attendance Details</h2>
+      <h3>Student Report  Attendance Details</h3>
       <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; width: 100%;">
         <tr style="background-color: #f2f2f2;">
           <th>Present No.</th>
@@ -291,6 +308,8 @@ export const sendReportAndScoreByEmail: express.RequestHandler = async (req: Req
 
       <h3>Headmaster Comment:</h3>
       <p>${report.headTeacher}</p> 
+
+      </div>
   `;
 
 
