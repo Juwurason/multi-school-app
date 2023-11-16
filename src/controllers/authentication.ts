@@ -479,15 +479,28 @@ export const register = async (req: Request, res: Response) => {
   export const editTermAndSession: express.RequestHandler = async (req: Request, res: Response) => {
     try {
       const { term, session, schoolNo } = req.body;
-      const { id } = req.params;
+      const { schoolId } = req.params;
   
+      
       // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
-      if (!isValidObjectId(id)) {
+      if (!isValidObjectId(schoolId)) {
         return res.status(400).json({ error: 'Invalid term session ID' });
       }
   
       // Find the term session by ID
-      const existingTermAndSession: ITermSession | null = await TermSession.findById(id);
+       const school: ISchool | null = await mySchool.findById(schoolId);
+
+       if (!school) {
+        return res.status(404).json({ error: 'School not found' });
+      }
+
+      const existingTermAndSession: ITermSession | null = await TermSession.findOne({
+        term: term,
+        session: session,
+        schoolNo: schoolNo,
+        school: school._id,
+      });
+
   
       if (!existingTermAndSession) {
         return res.status(404).json({ error: 'Term session not found' });
@@ -498,19 +511,17 @@ export const register = async (req: Request, res: Response) => {
       existingTermAndSession.session = session;
       existingTermAndSession.schoolNo = schoolNo;
   
-      // Save the updated TermSession to the database
+      // // Save the updated TermSession to the database
       await existingTermAndSession.save();
   
-      // Update the term and session in the school model (assuming you have a school reference in the term session)
-      const school: ISchool | null = await mySchool.findById(existingTermAndSession.school);
+      // Update the term and session in the school model (assuming you have a school reference in the term session
   
-      if (school) {
         school.term = term;
         school.session = session;
   
         // Save the updated school to the database
         await school.save();
-      }
+      
   
       return res.status(200).json({ message: 'Term and session updated successfully' });
     } catch (error) {
