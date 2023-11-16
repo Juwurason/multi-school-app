@@ -29,7 +29,7 @@ export const report: express.RequestHandler = async (req: Request, res: Response
     const { term, session, presentNo } = school;
               const total = Number(presentNo) - Number(sPresentNo);
     const report = {
-      sPresentNo, absentNo: total, attentiveness, honesty, neatness, puntuality,
+      presentNo: sPresentNo, absentNo: total, attentiveness, honesty, neatness, puntuality,
       leadershipRespon, handling, handWriting, publicSpeack, drawingPainting,
       sportGames, classTeacher, headTeacher, term: term, session: session, student: student._id
     }
