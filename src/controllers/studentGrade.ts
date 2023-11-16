@@ -238,7 +238,7 @@ export const getScoresById: express.RequestHandler = async (req, res) => {
       return res.status(400).json({ error: 'Invalid ID' });
     }
 
-    const score: IStudentGradeFormat | null = await StudentGradeFormat.findById(id);
+    const score: IStudentGradeFormat | null = await StudentGradeFormat.findById(id).populate('subject');
 
     if (!score) {
       return res.status(404).json({ error: 'Score not found' });

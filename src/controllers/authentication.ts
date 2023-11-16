@@ -518,7 +518,7 @@ export const register = async (req: Request, res: Response) => {
   
         school.term = term;
         school.session = session;
-        school.presentNo = schoolNo
+        school.presentNo = schoolNo;
         // Save the updated school to the database
         await school.save();
       

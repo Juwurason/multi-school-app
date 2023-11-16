@@ -155,7 +155,7 @@ export const getSubjectById: express.RequestHandler = async (req, res) => {
     const subjecti: ISubject | null = await Subject.findOne({
       school: school._id,
       subject: subject
-    }).populate('subject');
+    });
 
     if (!subjecti) {
       return res.status(404).json({ error: 'Subject not found' });
