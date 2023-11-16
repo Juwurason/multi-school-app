@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import mySchool, { ISchool } from '../db/myschools';
-import { isValidObjectId } from 'mongoose'
+import { AnyArray, isValidObjectId } from 'mongoose'
 import StudentGradeFormat, { IStudentGradeFormat } from '../db/studentGrade';
 import Student, { IStudent } from '../db/student';
 import Subject, { ISubject } from '../db/subject';
@@ -274,59 +274,133 @@ export const deleteStudentScoreById: express.RequestHandler = async (req, res) =
   }
 };
 
-// export const getClassGradeAverage: express.RequestHandler = async (req: Request, res: Response) => {
-//   try {
-//     const { classId } = req.params;
+export const getStudentGradesBySchoolId: express.RequestHandler = async (req: Request, res: Response) => {
+  try {
+    const { schoolId } = req.params;
 
-//     // Find the class by ID
-//     const schoolClass: ISchoolClass | null = await SchoolClass.findById(classId);
+    // Check if the school with the provided schoolId exists
+    const school: ISchool | null = await mySchool.findById(schoolId);
 
-//     if (!schoolClass) {
-//       return res.status(404).json({ error: 'Class not found' });
-//     }
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
 
-//     // Get all subjects for the class
-//     const subjects: ISubject[] | null = await Subject.find({ schoolClass: schoolClass._id });
+    const {term, session} = school
+    // Fetch all student grades for the school
+    const studentGrades: IStudentGradeFormat[] | null = await StudentGradeFormat.find({
+      school: school._id,
+      term: term,
+      session: session
+    }).populate('student'); // Assuming there's a reference to the student model in your student grade model
 
-//     if (!subjects || subjects.length === 0) {
-//       return res.status(404).json({ error: 'No subjects found for the class' });
-//     }
+    if (!studentGrades) {
+      return res.status(404).json({ error: 'No student grades found for this school' });
+    }
 
-//     // Calculate the grade average for each subject
-//     const subjectAverages: { [key: string]: number } = {};
+    return res.status(200).json({ studentGrades });
+  } catch (error) {
+    console.error('Error getting student grades by school ID:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
-//     for (const subject of subjects) {
-//       // Find scores for the subject
-//       const scores: IStudentGradeFormat[] | null = await StudentGradeFormat.find({
-//         subject: subject._id,
-//         studentClass: schoolClass._id,
-//       });
+export const getClassGradeAverage: express.RequestHandler = async (req: Request, res: Response) => {
+  try {
+    const { classId } = req.params;
 
-//       if (scores && scores.length > 0) {
-//         // Calculate average
-//         const average: number =
-//           scores.reduce((total: number, score: typeof scores[0]) => total + (score.ca + score.exam), 0) / scores.length;
+    // Find the class by ID
+    const schoolClass: ISchoolClass | null = await SchoolClass.findById(classId);
+
+    if (!schoolClass) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+
+    // Get all subjects for the class
+    const subjects: ISubject[] | null = await Subject.find({ schoolClass: schoolClass._id });
+
+    if (!subjects || subjects.length === 0) {
+      return res.status(404).json({ error: 'No subjects found for the class' });
+    }
+
+    // Calculate the grade average for each subject
+    const subjectAverages: { [key: string]: number } = {};
+
+    for (const subject of subjects) {
+      // Find scores for the subject
+      const scores: IStudentGradeFormat[] | null = await StudentGradeFormat.find({
+        subject: subject._id,
+        studentClass: schoolClass._id,
+      });
+
+      if (scores && scores.length > 0) {
+        // Calculate average
+        const average: number =
+          scores.reduce((total: number, score: IStudentGradeFormat) => total + (Number(score.ca) + Number(score.exam)), 0) / scores.length;
       
-//         // Determine grade based on the average (You'll need to implement this part based on your grading system)
-//         const grade: string = determineGrade(average); // Implement determineGrade function
+        // Determine grade based on the average (You'll need to implement this part based on your grading system)
+        // const grade: any = determineGrade(average); // Implement determineGrade function
       
-//         // Store the average and grade in the subjectAverages object
-//         subjectAverages[subject.subject] = average;
-//       }
+        // Store the average and grade in the subjectAverages object
+        subjectAverages[subject.subject] = average;
+    }
       
       
-//     }
+    }
 
-//     return res.status(200).json({ subjectAverages });
-//   } catch (error) {
-//     console.error('Error getting class grade average:', error);
-//     return res.status(500).json({ error: 'Internal server error' });
-//   }
-// };
+    return res.status(200).json({ subjectAverages });
+  } catch (error) {
+    console.error('Error getting class grade average:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
-// // Implement the determineGrade function based on your grading system
+// Implement the determineGrade function based on your grading system
 // function determineGrade(average: number) {
 //   // Your logic to determine the grade based on the average
 //   // Example: if (average >= 90) return 'A';
 //   // Adjust the logic according to your grading scale
 // }
+
+
+export const getClassPositions: express.RequestHandler = async (req: Request, res: Response) => {
+  try {
+      const { classId } = req.params;
+
+      // Find the school class by ID
+      const schoolClass: ISchoolClass | null = await SchoolClass.findById(classId);
+
+      if (!schoolClass) {
+          return res.status(404).json({ error: 'Class not found' });
+      }
+
+      // Fetch all students in the same class
+      const classStudents: IStudent[] = await Student.find({ studentClass: schoolClass });
+
+      // Fetch scores for all students in the same class
+      const scores: IStudentGradeFormat[] = await StudentGradeFormat.find({
+          student: { $in: classStudents.map((s) => s._id) },
+      });
+
+      // Calculate the total marks for each student
+      const totalMarksMap: Record<string, number> = {};
+      scores.forEach((score) => {
+          const totalMarks = Number(score.ca) + Number(score.exam);
+          totalMarksMap[score.student.toString()] = totalMarks;
+      });
+
+      // Determine the position based on total marks for each student
+      const positions = classStudents.map((s) => {
+          const totalMarks = totalMarksMap[s._id.toString()] || 0;
+          const position = classStudents
+              .map((otherStudent) => totalMarksMap[otherStudent._id.toString()] || 0)
+              .filter((otherTotalMarks) => otherTotalMarks > totalMarks).length + 1;
+
+          return { studentFirstName: s.name, studentLastName: s.lastName, position };
+      });
+
+      return res.status(200).json({ positions });
+  } catch (error) {
+      console.error('Error getting class positions:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+  }
+};

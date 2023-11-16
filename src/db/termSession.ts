@@ -4,6 +4,7 @@ export interface ITermSession extends Document {
   school: Schema.Types.ObjectId;
   term: string;
   session: string;
+  schoolNo: string;
 }
 
 const termSession: Schema = new Schema<ITermSession>(
@@ -21,6 +22,7 @@ const termSession: Schema = new Schema<ITermSession>(
       type: String,
       required: true,
     },
+    schoolNo: String,
   
   },
   {

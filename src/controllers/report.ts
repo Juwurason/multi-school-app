@@ -12,7 +12,7 @@ import * as pdf from 'html-pdf';
 export const report: express.RequestHandler = async (req: Request, res: Response) => {
 
   try {
-    const { presentNo, absentNo, attentiveness, honesty, neatness, puntuality,
+    const { sPresentNo, attentiveness, honesty, neatness, puntuality,
       leadershipRespon, handling, handWriting, publicSpeack, drawingPainting,
       sportGames, classTeacher, headTeacher, } = req.body
     const { studentId } = req.params;
@@ -26,10 +26,10 @@ export const report: express.RequestHandler = async (req: Request, res: Response
 
     const school: ISchool | null = await mySchool.findById(student.school);
 
-    const { term, session } = school;
-
+    const { term, session, presentNo } = school;
+              const total = Number(presentNo) - Number(sPresentNo);
     const report = {
-      presentNo, absentNo, attentiveness, honesty, neatness, puntuality,
+      sPresentNo, absentNo: total, attentiveness, honesty, neatness, puntuality,
       leadershipRespon, handling, handWriting, publicSpeack, drawingPainting,
       sportGames, classTeacher, headTeacher, term: term, session: session, student: student._id
     }
@@ -47,7 +47,7 @@ export const report: express.RequestHandler = async (req: Request, res: Response
 
 export const updateReportById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-    const { presentNo, absentNo, attentiveness, honesty, neatness, puntuality,
+    const { sPresentNo, absentNo, attentiveness, honesty, neatness, puntuality,
       leadershipRespon, handling, handWriting, publicSpeack, drawingPainting,
       sportGames, classTeacher, headTeacher } = req.body;
 
@@ -65,7 +65,7 @@ export const updateReportById: express.RequestHandler = async (req: Request, res
     }
 
     // Update the report with the provided data
-    existingReport.presentNo = presentNo;
+    existingReport.presentNo = sPresentNo;
     existingReport.absentNo = absentNo;
     existingReport.attentiveness = attentiveness;
     existingReport.honesty = honesty;

@@ -10,7 +10,7 @@ import { deleteSchoolClassById, getSchoolClassById, getSchoolClassBySchoolId, sc
 import { deleteSubjectById, getSubjectByClassId, getSubjectById, getSubjectBySchoolId, subject } from '../controllers/subject';
 import { deleteScoreById, getScoreById, getScoreBySchoolId, score, updateScoreById } from '../controllers/score';
 import { createGradeFormat, deleteGradeFormatById, getGradeFormatById, getGradeFormatsBySchoolId, updateGradeById } from '../controllers/grade';
-import { deleteStudentScoreById, getScoresById, getStudentScoreById, studentGrade, updateStudentScoreById } from '../controllers/studentGrade';
+import { deleteStudentScoreById, getClassGradeAverage, getClassPositions, getScoresById, getStudentGradesBySchoolId, getStudentScoreById, studentGrade, updateStudentScoreById } from '../controllers/studentGrade';
 import { deleteReportById, getReportAndScoreByEmail, getReportById, getReportsByStudentId, report, sendReportAndScoreByEmail, updateReportById } from '../controllers/report';
 // Create a Multer storage for file uploads
 const storage = multer.memoryStorage();
@@ -63,6 +63,17 @@ export default (router: express.Router) => {
     router.get('/get_student_score/:schoolId/:studentId', 
     passport.authenticate('jwt', { session: false }),
      getStudentScoreById);
+    router.get('/get_student_report_by_schoolId/:schoolId', 
+    passport.authenticate('jwt', { session: false }),
+    getStudentGradesBySchoolId);
+
+    router.get('/get_class_average_grade/:classId', 
+    passport.authenticate('jwt', { session: false }),
+    getClassGradeAverage);
+
+    router.get('/get_class_position/:classId', 
+    passport.authenticate('jwt', { session: false }),
+    getClassPositions);
     router.get('/get_student_score_byId/:id', passport.authenticate('jwt', { session: false }), getScoresById);
     router.get('/get_student_score_&_report/:studentId/:term/:session', passport.authenticate('jwt', { session: false }), getReportAndScoreByEmail);
     router.post('/delete_student_score_byId/:id', passport.authenticate('jwt', { session: false }), deleteStudentScoreById);
@@ -80,7 +91,9 @@ export default (router: express.Router) => {
     router.post('/update_Letter/:id', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), updateNewsLetterById);
     router.post('/delete_Letter/:id', passport.authenticate('jwt', { session: false }), deleteLetterById);
     router.get('/get_Letter_details/:id', passport.authenticate('jwt', { session: false }), getLetterById);
-    router.post('/send-newsletter/:classId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetter);
+    router.post('/send-newsletter/:classId', upload.single('newsLetter'),
+    //  passport.authenticate('jwt', { session: false }), 
+     sendNewsLetter);
     router.post('/send-newsletter_to_all/:schoolId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetterToAll);
     router.post('/update_teacher/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateTeacherById);
     router.post('/update_student/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateStudentById);

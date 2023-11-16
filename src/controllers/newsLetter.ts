@@ -305,7 +305,7 @@ export const sendNewsLetter: express.RequestHandler = async (req, res) => {
     const newsLetterData: any = {
       subject,
       content,
-      schoolId: targetClass.school
+      school: targetClass.school
       // schoolClass: classId, // Assuming your newsletter schema has a schoolClass field
     };
 
@@ -369,7 +369,7 @@ export const sendNewsLetterToAll: express.RequestHandler = async (req, res) => {
     const newsLetterData: any = {
       subject,
       content,
-      schoolId: schoolId
+      school: schoolId
       // schoolClass: classId, // Assuming your newsletter schema has a schoolClass field
     };
 

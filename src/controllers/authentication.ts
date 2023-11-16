@@ -292,7 +292,7 @@ export const register = async (req: Request, res: Response) => {
   export const updateSchoolById: express.RequestHandler = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { name, address, phoneNumber, city, state, role, school_category, website, presentNo, absentNo } = req.body;
+      const { name, address, phoneNumber, city, state, role, school_category, website } = req.body;
       
       // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
       if (!isValidObjectId(id)) {
@@ -347,8 +347,8 @@ export const register = async (req: Request, res: Response) => {
       existingSchool.role = role;
       existingSchool.school_category = school_category;
       existingSchool.website = website;
-      existingSchool.presentNo = presentNo;
-      existingSchool.absentNo = absentNo;
+      // existingSchool.presentNo = presentNo;
+      // existingSchool.absentNo = absentNo;
 
   
       // Save the updated teacher to the database
@@ -424,7 +424,7 @@ export const register = async (req: Request, res: Response) => {
 
   export const addTermAndSession: express.RequestHandler = async (req: Request, res: Response) => {
     try {
-      const { term, session } = req.body;
+      const { term, session, schoolNo } = req.body;
       const { schoolId } = req.params;
   
       // Find the school by ID
@@ -438,7 +438,7 @@ export const register = async (req: Request, res: Response) => {
       const existingTermAndSession: ITermSession | null = await TermSession.findOne({
       school: school._id,
       term: term,
-      session: session
+      session: session,
       })
 
 
@@ -454,6 +454,7 @@ export const register = async (req: Request, res: Response) => {
       school: school._id,
       term: term,
       session: session,
+      schoolNo: schoolNo,
     });
 
     // Save the new instance to the database
@@ -462,7 +463,7 @@ export const register = async (req: Request, res: Response) => {
       // Update the currentTerm and currentSession in the school model
       school.term = term;
       school.session = session;
-  
+      school.presentNo = schoolNo;
       // Save the updated school to the database
       await school.save();
   
@@ -473,49 +474,7 @@ export const register = async (req: Request, res: Response) => {
     }
   };
 
-  // export const editTermAndSession: express.RequestHandler = async (req: Request, res: Response) => {
-  //   try {
-  //     const { term, session } = req.body;
-  //     const { schoolId } = req.params;
   
-  //     // Find the school by ID
-  //     const school: ISchool | null = await mySchool.findById(schoolId);
-  
-  //     // If the school is not found, return a 404 error
-  //     if (!school) {
-  //       return res.status(404).json({ error: 'School not found' });
-  //     }
-  
-  //     // Find the existing term and session for the school
-  //     const existingTermAndSession: ITermSession | null = await TermSession.findOne({
-  //       school: school._id,
-  //     });
-  
-  //     // If the term and session do not exist, return a 404 error
-  //     if (!existingTermAndSession) {
-  //       return res.status(404).json({ error: 'Term and session not found for this school' });
-  //     }
-  
-  //     // Update the term and session in the existing TermSession
-  //     existingTermAndSession.term = term;
-  //     existingTermAndSession.session = session;
-  
-  //     // Save the updated TermSession to the database
-  //     await existingTermAndSession.save();
-  
-  //     // Update the term and session in the school model
-  //     school.term = term;
-  //     school.session = session;
-  
-  //     // Save the updated school to the database
-  //     await school.save();
-  
-  //     return res.status(200).json({ message: 'Term and session updated successfully' });
-  //   } catch (error) {
-  //     console.error('Error editing term and session:', error);
-  //     return res.status(500).json({ error: 'Internal server error' });
-  //   }
-  // };
 
   export const editTermAndSession: express.RequestHandler = async (req: Request, res: Response) => {
     try {
