@@ -478,7 +478,7 @@ export const register = async (req: Request, res: Response) => {
 
   export const editTermAndSession: express.RequestHandler = async (req: Request, res: Response) => {
     try {
-      const { term, session } = req.body;
+      const { term, session, schoolNo } = req.body;
       const { id } = req.params;
   
       // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
@@ -496,6 +496,7 @@ export const register = async (req: Request, res: Response) => {
       // Update the term and session in the existing TermSession
       existingTermAndSession.term = term;
       existingTermAndSession.session = session;
+      existingTermAndSession.schoolNo = schoolNo;
   
       // Save the updated TermSession to the database
       await existingTermAndSession.save();
