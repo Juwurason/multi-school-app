@@ -46,7 +46,7 @@ export default (router: express.Router) => {
      letterHead);
     router.post('/add_classes/:schoolId/classes', passport.authenticate('jwt', { session: false }), schoolClass);
     router.post('/add_term_session/:schoolId', passport.authenticate('jwt', { session: false }), addTermAndSession);
-    router.post('/update_term_session/:id', passport.authenticate('jwt', { session: false }), editTermAndSession);
+    router.post('/update_term_session/:schoolId', passport.authenticate('jwt', { session: false }), editTermAndSession);
     router.post('/delete_term_session/:id', passport.authenticate('jwt', { session: false }), deleteTermSessionById);
     router.post('/add_subjects/:schoolId/subjects', passport.authenticate('jwt', { session: false }), subject);
     router.post('/add_score/:schoolId', passport.authenticate('jwt', { session: false }), score);
