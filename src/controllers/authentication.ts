@@ -497,7 +497,7 @@ export const register = async (req: Request, res: Response) => {
       const existingTermAndSession: ITermSession | null = await TermSession.findOne({
         term: term,
         session: session,
-        schoolNo: schoolNo,
+        // schoolNo: schoolNo,
         school: school._id,
       });
 
@@ -518,7 +518,7 @@ export const register = async (req: Request, res: Response) => {
   
         school.term = term;
         school.session = session;
-  
+        school.presentNo = schoolNo
         // Save the updated school to the database
         await school.save();
       
