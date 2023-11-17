@@ -229,22 +229,7 @@ export const sendReportAndScoreByEmail: express.RequestHandler = async (req: Req
     const score: ScoreWithPopulatedSubject[] | null = await StudentGradeFormat.find({ student: student._id, term: term, session: session })
       .populate('subject')
       .lean();
-  //     <div style="background-image: url(letterHead.jpg); background-repeat: no-repeat; height: 100vh; width: 100%; background-size: cover; display: flex; justify-content: center; align-items: center;">
-
-  //     <div style=" padding: 20px; border-radius: 10px; width: 100%;">
-  //         <h3>Student Report Scores</h3>
-  //         <table border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse; width: 100%;">
-  //             <tr style="background-color: #f2f2f2;">
-  //                 <th>Subject</th>
-  //                 <th>CA</th>
-  //                 <th>Exam</th>
-  //                 <th>Total</th>
-  //                 <th>Remark</th>
-  //             </tr>
-  //             <!-- Insert your generated score rows here -->
-  //         </table>
-  //     </div>
-  // </div>
+  
     const emailContent = `
     <div style="background-image: url(${schoolLogoUrl}); background-repeat: no-repeat; height: 100vh; width: 100%; background-size: cover; display: flex; justify-content: center; align-items: center;">
       <div style=" padding: 20px; border-radius: 10px; width: 100%;">
@@ -288,26 +273,26 @@ export const sendReportAndScoreByEmail: express.RequestHandler = async (req: Req
         </tr>
         
           <tr>
-            <td style="text-align: center;">${report.presentNo}</td>
-            <td style="text-align: center;">${report.absentNo}</td>
-            <td style="text-align: center;">${report.attentiveness}</td>
-            <td style="text-align: center;">${report.honesty}</td>
-            <td style="text-align: center;">${report.neatness}</td>
-            <td style="text-align: center;">${report.puntuality}</td>
-            <td style="text-align: center;">${report.leadershipRespon}</td>
-            <td style="text-align: center;">${report.handling}</td>
-            <td style="text-align: center;">${report.handWriting}</td>
-            <td style="text-align: center;">${report.publicSpeack}</td>
-            <td style="text-align: center;">${report.drawingPainting}</td>
-            <td style="text-align: center;">${report.sportGames}</td>
+            <td style="text-align: center;">${report?.presentNo}</td>
+            <td style="text-align: center;">${report?.absentNo}</td>
+            <td style="text-align: center;">${report?.attentiveness}</td>
+            <td style="text-align: center;">${report?.honesty}</td>
+            <td style="text-align: center;">${report?.neatness}</td>
+            <td style="text-align: center;">${report?.puntuality}</td>
+            <td style="text-align: center;">${report?.leadershipRespon}</td>
+            <td style="text-align: center;">${report?.handling}</td>
+            <td style="text-align: center;">${report?.handWriting}</td>
+            <td style="text-align: center;">${report?.publicSpeack}</td>
+            <td style="text-align: center;">${report?.drawingPainting}</td>
+            <td style="text-align: center;">${report?.sportGames}</td>
           </tr>
         
       </table>
       <h3>Teacher Comment:</h3>
-      <p>${report.classTeacher}</p>
+      <p>${report?.classTeacher}</p>
 
       <h3>Headmaster Comment:</h3>
-      <p>${report.headTeacher}</p> 
+      <p>${report?.headTeacher}</p> 
 
       </div>
   `;
