@@ -569,7 +569,7 @@ export const getTermSessionBySchoolId: express.RequestHandler = async (req: Requ
     }
 
     // Find the term and session associated with the school
-    const termSession: ITermSession | null = await TermSession.findOne({ school: school._id });
+    const termSession: ITermSession[] | null = await TermSession.find({ school: school._id });
 
     // If the term and session are not found, return a 404 error
     if (!termSession) {

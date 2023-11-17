@@ -52,7 +52,7 @@ export default (router: express.Router) => {
     router.post('/add_score/:schoolId', passport.authenticate('jwt', { session: false }), score);
     router.post('/add_report/:studentId', passport.authenticate('jwt', { session: false }), report);
     router.post('/send_report_by_email/:studentId/:term/:session',
-    //  passport.authenticate('jwt', { session: false }),
+     passport.authenticate('jwt', { session: false }),
      sendReportAndScoreByEmail);
     router.post('/update_report/:reportId', passport.authenticate('jwt', { session: false }), updateReportById);
     router.get('/report_details/:reportId', passport.authenticate('jwt', { session: false }), getReportById);
@@ -86,7 +86,9 @@ export default (router: express.Router) => {
     router.post('/update_grade/:id', passport.authenticate('jwt', { session: false }), updateGradeById);
     router.post('/delete_grade/:id', passport.authenticate('jwt', { session: false }), deleteGradeFormatById);
     router.get('/get_grade_byId/:id', passport.authenticate('jwt', { session: false }), getGradeFormatById);
-    router.get('/get_term_session_by_schoolId/:schoolId', passport.authenticate('jwt', { session: false }), getTermSessionBySchoolId);
+    router.get('/get_term_session_by_schoolId/:schoolId', 
+    passport.authenticate('jwt', { session: false }),
+     getTermSessionBySchoolId);
     router.get('/get_term_session_by_Id/:id', passport.authenticate('jwt', { session: false }), getTermAndSessionById);
     router.post('/add_student/:schoolId/student', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), createStudent);
     router.post('/news_Letter/:schoolId/school_news', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), newsLetter);
