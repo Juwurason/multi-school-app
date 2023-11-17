@@ -6,7 +6,7 @@ import Student, { IStudent } from '../db/student';
 import Subject, { ISubject } from '../db/subject';
 import GradeFormat, { IGradeFormat } from '../db/grade';
 import SchoolClass, { ISchoolClass } from '../db/schoolClass';
-import Report, { IReport } from 'db/report';
+import Report, { IReport } from '../db/report';
 
 
 export const studentGrade: express.RequestHandler = async (req: Request, res: Response) => {
