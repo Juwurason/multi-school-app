@@ -167,7 +167,7 @@ export const getReportAndScoreByEmail: express.RequestHandler = async (req: Requ
     const report: IReport | null = await Report.findOne({ student: student._id, term: term, session: session });
 
     // Find the student's score
-    const score: IStudentGradeFormat[] | null = await StudentGradeFormat.find({ student: student._id, term: term, session: session });
+    const score: IStudentGradeFormat[] | null = await StudentGradeFormat.find({ student: student._id, term: term, session: session }).populate('subject');
 
     // If the report or score is not found, return an error
     // if (!report || !score) {
