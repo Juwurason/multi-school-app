@@ -96,7 +96,7 @@ export default (router: express.Router) => {
     router.post('/delete_Letter/:id', passport.authenticate('jwt', { session: false }), deleteLetterById);
     router.get('/get_Letter_details/:id', passport.authenticate('jwt', { session: false }), getLetterById);
     router.post('/send-newsletter/:classId', upload.single('newsLetter'),
-    //  passport.authenticate('jwt', { session: false }), 
+     passport.authenticate('jwt', { session: false }), 
      sendNewsLetter);
     router.post('/send-newsletter_to_all/:schoolId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetterToAll);
     router.post('/update_teacher/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateTeacherById);
