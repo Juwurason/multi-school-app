@@ -6,6 +6,7 @@ import Student, { IStudent } from '../db/student';
 import Subject, { ISubject } from '../db/subject';
 import GradeFormat, { IGradeFormat } from '../db/grade';
 import SchoolClass, { ISchoolClass } from '../db/schoolClass';
+import Report, { IReport } from 'db/report';
 
 
 export const studentGrade: express.RequestHandler = async (req: Request, res: Response) => {
@@ -221,7 +222,9 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
       }
     }
 
-    return res.status(200).json(validatedScores);
+    const reports: IReport = await Report.findOne({ student: student._id, term: term, session: session });
+
+    return res.status(200).json({validatedScores, reports});
     //   return res.status(200).json(score);
   } catch (error) {
     console.error('Error fetching score by schoolId:', error);
