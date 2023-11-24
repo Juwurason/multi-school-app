@@ -13,6 +13,7 @@ export interface ITeacher extends Document {
   teacherClass: Schema.Types.ObjectId;
   staffId: string;
   school: Schema.Types.ObjectId; 
+  teacherSubject: Schema.Types.ObjectId | Schema.Types.ObjectId[] | null;
   profilePictureUrl?: string;
   isEmailVerified: boolean; // Field to track email verification status
   otp?: string; // Field to store OTP (optional, as it's generated)
@@ -53,6 +54,11 @@ const teacherSchema: Schema = new Schema<ITeacher>({
     required: true,
   },
   profilePictureUrl: String,
+  teacherSubject: {
+    type: Schema.Types.Mixed,
+    ref: 'Subject', // Reference to the Subject model
+    default: null,
+  },
   isEmailVerified: {
     type: Boolean,
     default: false, // New teachers are not verified by default

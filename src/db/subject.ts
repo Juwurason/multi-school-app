@@ -6,8 +6,9 @@ export interface ISubject extends Document {
   school: Schema.Types.ObjectId; 
   // schoolClass?: Schema.Types.ObjectId[] | null; // Optional reference to the SchoolClass model
   schoolClass?: Schema.Types.ObjectId | Schema.Types.ObjectId[] | null;
+  teacher?: Schema.Types.ObjectId | null;
   subject?: string;
- 
+  
 }
 
 const subject: Schema = new Schema<ISubject>({
@@ -21,6 +22,11 @@ const subject: Schema = new Schema<ISubject>({
     ref: 'SchoolClass', // Reference to the SchoolClass model
     default: null, // Default value is null, indicating it's applicable to all classes
   }],
+  teacher:{
+    type: Schema.Types.ObjectId,
+    ref: 'Teacher', // Reference to the Teacher model
+    default: null
+  },
   subject: {
     type: String,
     required: true,

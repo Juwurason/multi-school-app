@@ -10,6 +10,7 @@ import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "fir
 import {Storage, Bucket_url} from '../config/firebase';
 import bcrypt from 'bcrypt'
 import axios from 'axios';
+import Subject from '../db/subject';
 
 function generateStaffId(schoolShortName: string): string {
   return `${schoolShortName}-${shortid.generate()}`;
@@ -17,7 +18,7 @@ function generateStaffId(schoolShortName: string): string {
 
 export const createTeacher: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-    const { name, lastName, address, phoneNumber, email, gender, teacherClass } = req.body;
+    const { name, lastName, address, phoneNumber, email, gender, teacherClass, teacherSubjects } = req.body;
     const { schoolId } = req.params;
 
     // Check if the school with the provided schoolId exists
@@ -54,23 +55,25 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       fileUrl = await getDownloadURL(fileRef);
     }
 
-    // Find the schoolClass by its ObjectId
-    const schoolClass = await SchoolClass.findById(teacherClass);
+     // Find the schoolClass by its ObjectId
+     const schoolClass = await SchoolClass.findById(teacherClass);
 
-    if (!schoolClass) {
-      return res.status(404).json({ error: 'School class not found' });
-    }
-      
-    const password = `${name.toLowerCase()}123`;
+     if (!schoolClass) {
+       return res.status(404).json({ error: 'School class not found' });
+     }
+ 
+     const password = `${name.toLowerCase()}123`;
+ 
+     const hashedPassword = await bcrypt.hash(password, 10);
+ 
+     const response = await axios.post('https://techxmail.onrender.com/sendmail', {
+        name: name,
+        mail: email,
+        text: `Email: ${email} \n Password: ${password}`,
+        subject: "Your Login Details"
+       });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const response = await axios.post('https://techxmail.onrender.com/sendmail', {
-       name: name,
-       mail: email,
-       text: `Email: ${email} \n Password: ${password}`,
-       subject: "Your Login Details"
-      });
+    if (school.school_category === "Primary") {
     // Create a new teacher with or without the profile picture URL
     const teacherData: any = {
       name,
@@ -102,17 +105,176 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
     await schoolClass.save();
 
     return res.status(201).json({ message: 'Teacher created successfully. Login details have been sent to their email.', teacher });
+
+    } else if (school.school_category === "Secondary") {
+            // Assign the teacher to the specified subjects
+            const teacherData: any = {
+              name,
+              lastName,
+              address,
+              phoneNumber,
+              email,
+              gender,
+              password: hashedPassword,
+              school: school._id,
+              // teacherSubject: teacherSubjects,
+              role: "Teacher",
+              staffId: generateStaffId(schoolShortName),
+            };
+
+            if (teacherSubjects && teacherSubjects.length > 0) {
+              teacherData.teacherSubject = teacherSubjects;
+            }
+      
+            if (fileUrl) {
+              teacherData.profilePictureUrl = fileUrl;
+            }
+      
+            // Create the teacher object
+            const teacher: ITeacher = new Teacher(teacherData);
+      
+            // Save the teacher to the database
+            await teacher.save();
+      
+            // Assign the teacher to the specified subjects
+            for (const subjectId of teacherSubjects) {
+              const subject = await Subject.findById(subjectId);
+              if (subject) {
+                subject.teacher = teacher._id; // Use the teacher's ObjectId
+                await subject.save();
+              }
+            }
+      
+            return res.status(201).json({ message: 'Teacher created successfully. Login details have been sent to their email.', teacher });
+          }
+    
+      
+    
   } catch (error) {
     console.error('Error creating teacher:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
+// export const createTeacher: express.RequestHandler = async (req: Request, res: Response) => {
+//   try {
+//     const { name, lastName, address, phoneNumber, email, gender, teacherClass, teacherSubjects } = req.body;
+//     const { schoolId } = req.params;
+
+//     // Check if the school with the provided schoolId exists
+//     const school: ISchool | null = await mySchool.findById(schoolId);
+
+//     if (!school) {
+//       return res.status(404).json({ error: 'School not found' });
+//     } 
+
+//     const schoolShortName = school.name.substring(0, 3).toUpperCase();
+
+//     // Check if the email already exists in the database
+//     const existingTeacher: ITeacher | null = await Teacher.findOne({ email }) || await mySchool.findOne({ email });
+
+//     if (existingTeacher) {
+//       return res.status(400).json({ error: 'Email already exists' });
+//     }
+
+//     let fileUrl: string | undefined;
+
+//     if (req.file) {
+//       // ... (existing file upload logic)
+//     }
+
+//     // Find the schoolClass by its ObjectId
+//     const schoolClass = await SchoolClass.findById(teacherClass);
+
+//     if (!schoolClass) {
+//       return res.status(404).json({ error: 'School class not found' });
+//     }
+
+//     const password = `${name.toLowerCase()}123`;
+//     const hashedPassword = await bcrypt.hash(password, 10);
+
+//     if (school.school_category === "Primary") {
+//       // Create a new teacher with or without the profile picture URL
+//       const teacherData: any = {
+//         name,
+//         lastName,
+//         address,
+//         phoneNumber,
+//         email,
+//         gender,
+//         password: hashedPassword,
+//         teacherClass: teacherClass, // Store the teacherClassId
+//         school: school._id,
+//         role: "Teacher",
+//         staffId: generateStaffId(schoolShortName),
+//       };
+
+//       if (fileUrl) {
+//         teacherData.profilePictureUrl = fileUrl;
+//       }
+
+//       // Create the teacher object
+//       const teacher: ITeacher = new Teacher(teacherData);
+
+//       // Save the teacher to the database
+//       await teacher.save();
+
+//       // Update the assignedTeacher field in the schoolClass document
+//       schoolClass.assignedTeacher = teacher._id; // Use the teacher's ObjectId
+
+//       await schoolClass.save();
+
+//       return res.status(201).json({ message: 'Teacher created successfully. Login details have been sent to their email.', teacher });
+//     }
+
+//     if (school.school_category === "Secondary") {
+//       // Assign the teacher to the specified subjects
+//       const teacherData: any = {
+//         name,
+//         lastName,
+//         address,
+//         phoneNumber,
+//         email,
+//         gender,
+//         password: hashedPassword,
+//         school: school._id,
+//         role: "Teacher",
+//         staffId: generateStaffId(schoolShortName),
+//       };
+
+//       if (fileUrl) {
+//         teacherData.profilePictureUrl = fileUrl;
+//       }
+
+//       // Create the teacher object
+//       const teacher: ITeacher = new Teacher(teacherData);
+
+//       // Save the teacher to the database
+//       await teacher.save();
+
+//       // Assign the teacher to the specified subjects
+//       for (const subjectId of teacherSubjects) {
+//         const subject = await Subject.findById(subjectId);
+//         if (subject) {
+//           subject.teacher = teacher._id; // Use the teacher's ObjectId
+//           await subject.save();
+//         }
+//       }
+
+//       return res.status(201).json({ message: 'Teacher created successfully. Login details have been sent to their email.', teacher });
+//     }
+//   } catch (error) {
+//     console.error('Error creating teacher:', error);
+//     return res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
+
+
 
 export const updateTeacherById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, lastName, address, phoneNumber, gender, role, teacherClass } = req.body;
+    const { name, lastName, address, phoneNumber, gender, role, teacherClass, teacherSubjects } = req.body;
 
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
     if (!isValidObjectId(id)) {
@@ -126,7 +288,10 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
       return res.status(404).json({ error: 'Teacher not found' });
     }
 
-    const schoolClass = await SchoolClass.findById(teacherClass);
+    const school: ISchool | null = await mySchool.findById(existingTeacher.school)
+
+    if (school.school_category === "Primary") {
+      const schoolClass = await SchoolClass.findById(teacherClass);
 
     if (!schoolClass) {
       return res.status(404).json({ error: 'School class not found' });
@@ -185,6 +350,18 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
     await schoolClass.save();
 
     return res.status(200).json({ message: 'Profile updated successfully', updatedTeacher: existingTeacher });
+    } else if (school.school_category === "Secondary" ) {
+      for (const subjectId of teacherSubjects) {
+        const subject = await Subject.findById(subjectId);
+        if (subject) {
+          subject.teacher = existingTeacher._id; // Use the teacher's ObjectId
+          await subject.save();
+        }
+      }
+    }
+
+    return res.status(200).json({ message: 'Teacher updated successfully', existingTeacher });
+    
   } catch (error) {
     console.error('Error updating teacher by ID:', error);
     return res.status(500).json({ error: 'Internal server error' });

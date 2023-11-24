@@ -224,7 +224,7 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
 
     const reports: IReport = await Report.findOne({ student: student._id, term: term, session: session });
 
-    return res.status(200).json({validatedScores, reports, presentNo});
+    return res.status(200).json({validatedScores, reports});
     //   return res.status(200).json(score);
   } catch (error) {
     console.error('Error fetching score by schoolId:', error);
