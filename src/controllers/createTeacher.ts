@@ -11,6 +11,7 @@ import {Storage, Bucket_url} from '../config/firebase';
 import bcrypt from 'bcrypt'
 import axios from 'axios';
 import Subject from '../db/subject';
+import mongoose from 'mongoose';
 
 function generateStaffId(schoolShortName: string): string {
   return `${schoolShortName}-${shortid.generate()}`;
@@ -56,11 +57,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
     }
 
      // Find the schoolClass by its ObjectId
-     const schoolClass = await SchoolClass.findById(teacherClass);
-
-     if (!schoolClass) {
-       return res.status(404).json({ error: 'School class not found' });
-     }
+     
  
      const password = `${name.toLowerCase()}123`;
  
@@ -75,6 +72,11 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
 
     if (school.school_category === "Primary") {
     // Create a new teacher with or without the profile picture URL
+    const schoolClass = await SchoolClass.findById(teacherClass);
+
+     if (!schoolClass) {
+       return res.status(404).json({ error: 'School class not found' });
+     }
     const teacherData: any = {
       name,
       lastName,
@@ -117,14 +119,14 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
               gender,
               password: hashedPassword,
               school: school._id,
-              // teacherSubject: teacherSubjects,
+              teacherSubject: teacherSubjects,
               role: "Teacher",
               staffId: generateStaffId(schoolShortName),
             };
 
-            if (teacherSubjects && teacherSubjects.length > 0) {
-              teacherData.teacherSubject = teacherSubjects;
-            }
+            // if (teacherSubjects && teacherSubjects.length > 0) {
+            //   teacherData.teacherSubject = teacherSubjects;
+            // }
       
             if (fileUrl) {
               teacherData.profilePictureUrl = fileUrl;
@@ -132,16 +134,15 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       
             // Create the teacher object
             const teacher: ITeacher = new Teacher(teacherData);
-      
             // Save the teacher to the database
-            await teacher.save();
-      
+            // await teacher.save();  
+            const subjectIdsArray = teacherSubjects.split(',');
             // Assign the teacher to the specified subjects
-            for (const subjectId of teacherSubjects) {
+            for (const subjectId of subjectIdsArray) {
               const subject = await Subject.findById(subjectId);
               if (subject) {
-                subject.teacher = teacher._id; // Use the teacher's ObjectId
-                await subject.save();
+                subject.teacher = teacher._id // Use the teacher's ObjectId
+                // await subject.save();
               }
             }
       

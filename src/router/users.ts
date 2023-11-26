@@ -40,7 +40,9 @@ export default (router: express.Router) => {
     router.post('/delete_subject/:subject/:schoolId', passport.authenticate('jwt', { session: false }), deleteSubjectById);
     router.post('/delete_school_class/:id', passport.authenticate('jwt', { session: false }), deleteSchoolClassById);
     router.post('/delete_student/:id', passport.authenticate('jwt', { session: false }), deleteStudentById);
-    router.post('/add_teacher/:schoolId/teachers', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), createTeacher);
+    router.post('/add_teacher/:schoolId/teachers', upload.single('profilePicture'),
+    //  passport.authenticate('jwt', { session: false }),
+      createTeacher);
     router.post('/school_letter_head/:schoolId', upload.single('letterHead'), 
     passport.authenticate('jwt', { session: false }),
      letterHead);

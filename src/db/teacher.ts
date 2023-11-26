@@ -47,6 +47,7 @@ const teacherSchema: Schema = new Schema<ITeacher>({
   teacherClass: {
     type: Schema.Types.ObjectId,
     ref: 'SchoolClass', // Reference to the SchoolClass model
+    default: null,
   },
   staffId: {
     type: String,
