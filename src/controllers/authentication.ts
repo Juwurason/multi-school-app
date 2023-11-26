@@ -70,6 +70,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
   try {
     const { email, password, role } = req.body;
 
+    
     if (!role) {
       return res.status(401).json({ message: 'Invalid role.' });
     }
@@ -83,7 +84,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       }
 
       const passwordMatch = await bcrypt.compare(password, user.password);
-
+      
       if (!passwordMatch) {
         return res.status(401).json({ message: 'Invalid password.' });
       }
@@ -110,6 +111,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       if (!user) {
         return res.status(401).json({ message: 'Invalid email.' });
       }
+      
       const passwordMatch = await bcrypt.compare(password, user.password);
 
       if (!passwordMatch) {
