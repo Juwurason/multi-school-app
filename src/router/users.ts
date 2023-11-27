@@ -41,7 +41,7 @@ export default (router: express.Router) => {
     router.post('/delete_school_class/:id', passport.authenticate('jwt', { session: false }), deleteSchoolClassById);
     router.post('/delete_student/:id', passport.authenticate('jwt', { session: false }), deleteStudentById);
     router.post('/add_teacher/:schoolId/teachers', upload.single('profilePicture'),
-    //  passport.authenticate('jwt', { session: false }),
+     passport.authenticate('jwt', { session: false }),
       createTeacher);
     router.post('/school_letter_head/:schoolId', upload.single('letterHead'), 
     passport.authenticate('jwt', { session: false }),
@@ -102,7 +102,9 @@ export default (router: express.Router) => {
      passport.authenticate('jwt', { session: false }), 
      sendNewsLetter);
     router.post('/send-newsletter_to_all/:schoolId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetterToAll);
-    router.post('/update_teacher/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateTeacherById);
+    router.post('/update_teacher/:id', upload.single('profilePicture'),
+    //  passport.authenticate('jwt', { session: false }),
+      updateTeacherById);
     router.post('/update_student/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateStudentById);
     router.post('/update_school/:id', upload.single('schoolLogo'),
      passport.authenticate('jwt', { session: false }),
