@@ -81,8 +81,20 @@ export const getTeachersBySchoolId: express.RequestHandler = async (req, res) =>
       return res.status(404).json({ error: 'School not found' });
     }
 
-    // Fetch teachers associated with the school
-    const teachers = await Teacher.find({ school: school._id });
+   // Fetch teachers associated with the school
+   const teachers: (ITeacher & Document)[] | null = await Teacher.find({ school: school._id });
+
+   if (!teachers || teachers.length === 0) {
+     return res.status(404).json({ error: 'No teachers found for the school' });
+   }
+
+   if (school.school_category === "Primary") {
+    // Populate the teacherClass field for Primary school
+    await Teacher.populate(teachers, { path: 'teacherClass' });
+  } else if (school.school_category === "Secondary") {
+    // Populate the teacherSubjects field for Secondary school
+    await Teacher.populate(teachers, { path: 'teacherSubject' });
+  }
 
     return res.status(200).json(teachers);
   } catch (error) {
