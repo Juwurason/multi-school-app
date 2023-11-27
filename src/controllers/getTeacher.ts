@@ -4,6 +4,7 @@ import Teacher, { ITeacher } from '../db/teacher'; // Import the Teacher model
 import mySchool, { ISchool } from '../db/myschools'; // Import the School model
 import { isValidObjectId } from 'mongoose'
 import SchoolClass, { ISchoolClass } from '../db/schoolClass';
+import mongoose from 'mongoose';
 
 // export const getTeachersById: express.RequestHandler = async (req, res) => {
 //   try {
@@ -70,6 +71,7 @@ export const getTeachersById: express.RequestHandler = async (req, res) => {
 };
 
 
+
 export const getTeachersBySchoolId: express.RequestHandler = async (req, res) => {
   try {
     const { schoolId } = req.params;
@@ -81,22 +83,11 @@ export const getTeachersBySchoolId: express.RequestHandler = async (req, res) =>
       return res.status(404).json({ error: 'School not found' });
     }
 
-   // Fetch teachers associated with the school
-   const teachers: (ITeacher & Document)[] | null = await Teacher.find({ school: school._id });
+    // Fetch teachers associated with the school
+    const teacher = await Teacher.find({ school: school._id }).populate('teacherClass')
+    
 
-   if (!teachers || teachers.length === 0) {
-     return res.status(404).json({ error: 'No teachers found for the school' });
-   }
-
-   if (school.school_category === "Primary") {
-    // Populate the teacherClass field for Primary school
-    await Teacher.populate(teachers, { path: 'teacherClass' });
-  } else if (school.school_category === "Secondary") {
-    // Populate the teacherSubjects field for Secondary school
-    await Teacher.populate(teachers, { path: 'teacherSubject' });
-  }
-
-    return res.status(200).json(teachers);
+    return res.status(200).json(teacher);
   } catch (error) {
     console.error('Error fetching teachers by schoolId:', error);
     return res.status(500).json({ error: 'Internal server error' });

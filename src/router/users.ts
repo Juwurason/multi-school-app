@@ -20,7 +20,9 @@ export default (router: express.Router) => {
     router.get("/", (req, res) =>{
         res.json({message: "Hello, backend"})
     })
-    router.get('/get_all_teacher-by_school_Id/:schoolId/teachers', passport.authenticate('jwt', { session: false }), getTeachersBySchoolId);
+    router.get('/get_all_teacher-by_school_Id/:schoolId/teachers',
+    //  passport.authenticate('jwt', { session: false }), 
+     getTeachersBySchoolId);
     router.get('/get_all_school-classes-by_school_Id/:schoolId/classes', passport.authenticate('jwt', { session: false }), getSchoolClassBySchoolId);
     router.get('/get_all_school-subjects-by_school_Id/:schoolId/subjects',
      passport.authenticate('jwt', { session: false }),
@@ -103,7 +105,7 @@ export default (router: express.Router) => {
      sendNewsLetter);
     router.post('/send-newsletter_to_all/:schoolId', upload.single('newsLetter'), passport.authenticate('jwt', { session: false }), sendNewsLetterToAll);
     router.post('/update_teacher/:id', upload.single('profilePicture'),
-    //  passport.authenticate('jwt', { session: false }),
+     passport.authenticate('jwt', { session: false }),
       updateTeacherById);
     router.post('/update_student/:id', upload.single('profilePicture'), passport.authenticate('jwt', { session: false }), updateStudentById);
     router.post('/update_school/:id', upload.single('schoolLogo'),
