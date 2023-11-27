@@ -72,6 +72,7 @@ export const getTeachersById: express.RequestHandler = async (req, res) => {
 
 
 
+
 export const getTeachersBySchoolId: express.RequestHandler = async (req, res) => {
   try {
     const { schoolId } = req.params;
@@ -84,7 +85,9 @@ export const getTeachersBySchoolId: express.RequestHandler = async (req, res) =>
     }
 
     // Fetch teachers associated with the school
-    const teacher = await Teacher.find({ school: school._id }).populate('teacherClass')
+    const teacher = await Teacher.find({ school: school._id })
+    .populate('teacherClass')
+    .populate('teacherSubject')
     
 
     return res.status(200).json(teacher);

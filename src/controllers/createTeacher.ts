@@ -119,7 +119,7 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
         gender,
         password: hashedPassword,
         school: school._id,
-        teacherSubject: teacherSubjects,
+        // teacherSubject: teacherSubjects,
         role: "Teacher",
         staffId: generateStaffId(schoolShortName),
       };
@@ -133,12 +133,19 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       }
 
       // Create the teacher object
-      const teacher: ITeacher = new Teacher(teacherData);
+      // const teacher: ITeacher = new Teacher(teacherData);
       // Save the teacher to the database
-      await teacher.save();
+      // await teacher.save();
       const subjectIdsArray = teacherSubjects.split(',');
 
       const cleanedTeacherSubjects: string[] = subjectIdsArray.map((subjectId: string) => subjectId.trim());
+
+      teacherData.teacherSubject = cleanedTeacherSubjects;
+
+    // Create the teacher object
+    const teacher: ITeacher = new Teacher(teacherData);
+    // Save the teacher to the database
+    await teacher.save();
 
       // Assign the teacher to the specified subjects
       for (const subjectId of cleanedTeacherSubjects) {
