@@ -175,7 +175,7 @@ export const getReportAndScoreByEmail: express.RequestHandler = async (req: Requ
     // }
 
     // Respond with the report and score data
-    return res.status(200).json({ report, score });
+    return res.status(200).json({message:"Report Loaded Successfully", report, score });
   } catch (error) {
     console.error('Error fetching report and score:', error);
     return res.status(500).json({ error: 'Internal server error' });
