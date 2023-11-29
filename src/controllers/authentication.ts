@@ -208,7 +208,7 @@ export const verifyOtpAndResetPassword = async (req: express.Request, res: expre
       const existingSchool = await mySchool.findOne({ email });
   
       if (!existingTeacher && !existingSchool) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: 'User not found', message: 'User not found' });
       }
 
       if (existingTeacher && existingTeacher.otp === otp) {
