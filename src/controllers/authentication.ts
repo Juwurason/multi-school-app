@@ -214,11 +214,11 @@ export const verifyOtpAndResetPassword = async (req: express.Request, res: expre
       if (existingTeacher && existingTeacher.otp === otp) {
         existingTeacher.password = await bcrypt.hash(newPassword, 10);
         await existingTeacher.save();
-        return res.status(200).json({ message: 'Password reset successful for Teacher.' });
+        return res.status(200).json({ message: 'Password reset successful for Teacher.', status: "Success" });
       }else if (existingSchool && existingSchool.otp === otp) {
         existingSchool.password = await bcrypt.hash(newPassword, 10);
         await existingSchool.save();
-        return res.status(200).json({ message: 'Password reset successful for School.' });
+        return res.status(200).json({ message: 'Password reset successful for School.', status: "Success" });
       }else {
         return res.status(401).json({ error: 'Invalid OTP or OTP has expired.' });
       }
