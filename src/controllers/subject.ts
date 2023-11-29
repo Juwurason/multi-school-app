@@ -201,6 +201,45 @@ export const getSubjectById: express.RequestHandler = async (req, res) => {
   }
 };
 
+export const updateSubject: express.RequestHandler = async (req, res) => {
+  try {
+    const { subject, schoolId } = req.params;
+
+    const { updatedSubjectData } = req.body
+
+    const school: ISchool | null = await mySchool.findById(schoolId);
+
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+
+    const existingSubject: ISubject | null = await Subject.findOne({
+      school: school._id,
+      subject: subject
+    });
+
+    if (!existingSubject) {
+      return res.status(404).json({ error: 'Subject not found' });
+    }
+
+    // Update the subject with the new data
+    const updatedSubject: ISubject | null = await Subject.findByIdAndUpdate(
+      existingSubject._id,
+      updatedSubjectData,
+      { new: true } // Return the modified document
+    );
+
+    if (!updatedSubject) {
+      return res.status(500).json({ error: 'Failed to update subject' });
+    }
+
+    return res.status(200).json({message: "Subject updated successfully"});
+  } catch (error) {
+    console.error('Error fetching subject by Id:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 
 export const deleteSubjectById: express.RequestHandler = async (req, res) => {
   try {

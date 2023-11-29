@@ -21,6 +21,7 @@ import * as path from 'path';
 import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
 import { Storage, Bucket_url } from '../config/firebase';
 import TermSession, { ITermSession } from '../db/termSession';
+import users from 'router/users';
 
 
 // Step 1 - Verify Email
@@ -175,11 +176,57 @@ export const forgetPassword = async (req: express.Request, res: express.Response
     if (!existingTeacher && !existingSchool) {
       return res.status(404).json({ error: 'Email not found' });
     }
+    
+    
+    if (existingTeacher) {
+      existingTeacher.otp = otp
+      await existingTeacher.save();
+    }else if (existingSchool) {
+      existingSchool.otp = otp
+      await existingSchool.save();
+    }
 
+    await sendVerificationEmail(email, otp);
+
+     // Use different messages based on whether it's a teacher or school
+     const messageType = existingTeacher ? 'Teacher' : 'School';
+     const successMessage = `OTP sent successfully to ${messageType}'s email.`;
+ 
+     res.status(200).json({ message: successMessage });
   } catch (error) {
-
+    console.log(error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 
+}
+
+export const verifyOtpAndResetPassword = async (req: express.Request, res: express.Response) => {
+    try {
+
+      const { email, otp, newPassword } = req.body;
+      const existingTeacher = await Teacher.findOne({ email });
+      const existingSchool = await mySchool.findOne({ email });
+  
+      if (!existingTeacher && !existingSchool) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      if (existingTeacher && existingTeacher.otp === otp) {
+        existingTeacher.password = await bcrypt.hash(newPassword, 10);
+        await existingTeacher.save();
+        return res.status(200).json({ message: 'Password reset successful for Teacher.' });
+      }else if (existingSchool && existingSchool.otp === otp) {
+        existingSchool.password = await bcrypt.hash(newPassword, 10);
+        await existingSchool.save();
+        return res.status(200).json({ message: 'Password reset successful for School.' });
+      }else {
+        return res.status(401).json({ error: 'Invalid OTP or OTP has expired.' });
+      }
+
+    } catch (error) {
+      console.error('Error in verifyOtpAndResetPassword:', error);
+      return res.status(500).json({ error: 'Internal server error' });
+    }
 }
 
 export const register = async (req: Request, res: Response) => {

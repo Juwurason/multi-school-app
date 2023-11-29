@@ -1,7 +1,7 @@
 import express from 'express'
 import { Request, Response, NextFunction } from 'express';
 import { resendOTP, verifyOTP } from '../helpers/send-otp';
-import { verifyEmail, confirmPassword, register } from "../controllers/authentication";
+import { verifyEmail, confirmPassword, register, forgetPassword, verifyOtpAndResetPassword } from "../controllers/authentication";
 
 export default (router: express.Router) => {
     router.post("/verify-otp", (req: Request, res: Response, next: NextFunction) => {
@@ -10,6 +10,14 @@ export default (router: express.Router) => {
 
     router.post("/resend-otp", (req: Request, res: Response) => {
         resendOTP(req, res); // Call the resendOTP function
+    });
+
+    router.post("/forget-password", (req: Request, res: Response) => {
+        forgetPassword(req, res); // Call the forgetPassword function
+    });
+
+    router.post("/verify-reset-password", (req: Request, res: Response) => {
+        verifyOtpAndResetPassword(req, res); // Call the verifyOtpAndResetPassword function
     });
 
     router.post("/auth/register", (req, res) => {
