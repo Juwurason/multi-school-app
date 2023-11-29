@@ -192,7 +192,7 @@ export const forgetPassword = async (req: express.Request, res: express.Response
      const messageType = existingTeacher ? 'Teacher' : 'School';
      const successMessage = `OTP sent successfully to ${messageType}'s email.`;
  
-     res.status(200).json({ message: successMessage });
+     res.status(200).json({ message: successMessage, status: "Success" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
