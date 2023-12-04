@@ -32,7 +32,7 @@ const teacherSchema: Schema = new Schema<ITeacher>({
   },
   school: {
     type: Schema.Types.ObjectId,
-    ref: 'School', // Reference to the School model
+    ref: 'mySchool', // Reference to the School model
     required: true,
   },
   password: {

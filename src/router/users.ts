@@ -21,7 +21,7 @@ export default (router: express.Router) => {
         res.json({message: "Hello, backend"})
     })
     router.get('/get_all_teacher-by_school_Id/:schoolId/teachers',
-    //  passport.authenticate('jwt', { session: false }), 
+     passport.authenticate('jwt', { session: false }), 
      getTeachersBySchoolId);
     router.get('/get_all_school-classes-by_school_Id/:schoolId/classes', passport.authenticate('jwt', { session: false }), getSchoolClassBySchoolId);
     router.get('/get_all_school-subjects-by_school_Id/:schoolId/subjects',
@@ -29,7 +29,9 @@ export default (router: express.Router) => {
       getSubjectBySchoolId);
     router.get('/get_all_students-by_school_Id/:schoolId/students', passport.authenticate('jwt', { session: false }), getStudentsBySchoolId);
     router.get('/get_all_news_Letter_by_school_Id/:schoolId/newsLetter', passport.authenticate('jwt', { session: false }), getLetterBySchoolId);
-    router.get('/get_teacher_byId/:id', passport.authenticate('jwt', { session: false }), getTeachersById);
+    router.get('/get_teacher_byId/:id', 
+    // passport.authenticate('jwt', { session: false }),
+     getTeachersById);
     router.get('/get_grade/:schoolId', passport.authenticate('jwt', { session: false }), getGradeFormatsBySchoolId);
     router.get('/get_score/:schoolId', passport.authenticate('jwt', { session: false }), getScoreBySchoolId);
     router.get('/get_class_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolClassById);

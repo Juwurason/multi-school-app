@@ -60,7 +60,7 @@ export const getTeachersById: express.RequestHandler = async (req, res) => {
       await teacher.populate('teacherClass');
     } else if (school.school_category === "Secondary") {
       // Populate the teacherSubjects field for Secondary school
-      await teacher.populate('teacherSubject');
+      await teacher.populate('school');
     }
 
     return res.status(200).json(teacher);
