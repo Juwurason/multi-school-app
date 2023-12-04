@@ -107,8 +107,9 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       };
     } else if (role === "Teacher") {
       // Find the user in your database based on the email
-      user = await Teacher.findOne({ email }).populate('teacherClass');
-      user = await Teacher.findOne({ email }).populate('teacherSubject');
+      user = await Teacher.findOne({ email })
+      .populate('teacherClass')
+      .populate('teacherSubject');
 
       if (!user) {
         return res.status(401).json({ message: 'Invalid email.' });
@@ -128,7 +129,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       }
 
       const schoolId = user.school;
-
+      const school: ISchool | null = await mySchool.findById(schoolId)
       userObject = {
         schoolId,
         id: user._id,
@@ -139,6 +140,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
         staffId: user.staffId,
         teacherClass: user.teacherClass,
         teacherSubject: user.teacherSubject,
+        schoolCategory: school.school_category,
         gender: user.gender,
         role: user.role,
         otp: otp,
