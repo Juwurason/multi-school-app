@@ -108,6 +108,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
     } else if (role === "Teacher") {
       // Find the user in your database based on the email
       user = await Teacher.findOne({ email }).populate('teacherClass');
+      user = await Teacher.findOne({ email }).populate('teacherSubject');
 
       if (!user) {
         return res.status(401).json({ message: 'Invalid email.' });
@@ -137,6 +138,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
         phoneNumber: user.phoneNumber,
         staffId: user.staffId,
         teacherClass: user.teacherClass,
+        teacherSubject: user.teacherSubject,
         gender: user.gender,
         role: user.role,
         otp: otp,
