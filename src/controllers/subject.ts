@@ -205,7 +205,7 @@ export const updateSubject: express.RequestHandler = async (req, res) => {
   try {
     const { subject, schoolId } = req.params;
 
-    const { updatedSubjectData } = req.body
+    const { subjectName, schoolClassIds } = req.body
 
     const school: ISchool | null = await mySchool.findById(schoolId);
 
@@ -223,15 +223,9 @@ export const updateSubject: express.RequestHandler = async (req, res) => {
     }
 
     // Update the subject with the new data
-    const updatedSubject: ISubject | null = await Subject.findByIdAndUpdate(
-      existingSubject._id,
-      updatedSubjectData,
-      { new: true } // Return the modified document
-    );
-
-    if (!updatedSubject) {
-      return res.status(500).json({ error: 'Failed to update subject' });
-    }
+    existingSubject.subject = subjectName
+    existingSubject.schoolClass = schoolClassIds
+    await existingSubject.save()
 
     return res.status(200).json({message: "Subject updated successfully"});
   } catch (error) {

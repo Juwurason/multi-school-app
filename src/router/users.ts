@@ -21,7 +21,7 @@ export default (router: express.Router) => {
         res.json({message: "Hello, backend"})
     })
     router.get('/get_all_teacher-by_school_Id/:schoolId/teachers',
-     passport.authenticate('jwt', { session: false }), 
+    //  passport.authenticate('jwt', { session: false }), 
      getTeachersBySchoolId);
     router.get('/get_all_school-classes-by_school_Id/:schoolId/classes', passport.authenticate('jwt', { session: false }), getSchoolClassBySchoolId);
     router.get('/get_all_school-subjects-by_school_Id/:schoolId/subjects',
