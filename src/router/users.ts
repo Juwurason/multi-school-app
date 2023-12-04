@@ -30,7 +30,7 @@ export default (router: express.Router) => {
     router.get('/get_all_students-by_school_Id/:schoolId/students', passport.authenticate('jwt', { session: false }), getStudentsBySchoolId);
     router.get('/get_all_news_Letter_by_school_Id/:schoolId/newsLetter', passport.authenticate('jwt', { session: false }), getLetterBySchoolId);
     router.get('/get_teacher_byId/:id', 
-    // passport.authenticate('jwt', { session: false }),
+    passport.authenticate('jwt', { session: false }),
      getTeachersById);
     router.get('/get_grade/:schoolId', passport.authenticate('jwt', { session: false }), getGradeFormatsBySchoolId);
     router.get('/get_score/:schoolId', passport.authenticate('jwt', { session: false }), getScoreBySchoolId);
