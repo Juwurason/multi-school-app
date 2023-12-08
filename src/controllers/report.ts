@@ -27,6 +27,17 @@ export const report: express.RequestHandler = async (req: Request, res: Response
     const school: ISchool | null = await mySchool.findById(student.school);
 
     const { term, session, presentNo } = school;
+
+    const existingReport: IReport | null = await Report.findOne({
+      student: student._id,
+      term: term,
+      session: session
+    });
+
+    if (existingReport) {
+      return res.status(400).json({ error: 'Student Report already exists for this term and session' });
+    }
+
               const total = Number(presentNo) - Number(sPresentNo);
     const report = {
       presentNo: sPresentNo, absentNo: total, attentiveness, honesty, neatness, puntuality,

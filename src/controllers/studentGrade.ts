@@ -55,7 +55,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
     });
 
     if (existingScore) {
-      return res.status(400).json({ error: 'Score already exists for this student and subject this term' });
+      return res.status(400).json({ error: 'Student Score already exists for this subject this term' });
     }
 
     const studentTotalScore: number = parseFloat(ca) + parseFloat(exam);
