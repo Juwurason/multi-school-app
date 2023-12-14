@@ -174,28 +174,27 @@ export const getSubjectByClassId: express.RequestHandler = async (req: Request, 
 
 export const getClassBySubject: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-    const {subjectName, schoolId} = req.params
-    
+    const { subjectName, schoolId } = req.params;
+
     const school = await mySchool.findById(schoolId);
 
     if (!school) {
       return res.status(404).json({ error: 'School not found' });
     }
 
-    const schoolClass: ISubject[] = await Subject.find({ school: school._id, subjcet: subjectName })
-    
-    if (!schoolClass) {
-      return res.status(404).json({ error: 'Class not found' });
+    const subjects: ISubject[] = await Subject.find({ subject: subjectName, school: school._id }).populate('schoolClass');
+
+    if (subjects.length === 0) {
+      return res.status(404).json({ error: 'No classes found for the specified subject' });
     }
 
-    
-    return res.status(200).json({message: "Class found successfully", schoolClass});
+    return res.status(200).json({ message: 'Classes found successfully', subjects });
   } catch (error) {
-    console.error('Error getting class by subjcet:', error);
+    console.error('Error getting classes by subject:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
+};
 
-}
 
 
 export const getSubjectById: express.RequestHandler = async (req, res) => {

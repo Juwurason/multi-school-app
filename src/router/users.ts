@@ -33,7 +33,7 @@ export default (router: express.Router) => {
     passport.authenticate('jwt', { session: false }),
      getTeachersById);
     router.get('/get_class_by_subject/:subjectName/:schoolId', 
-    passport.authenticate('jwt', { session: false }),
+    // passport.authenticate('jwt', { session: false }),
     getClassBySubject);
     router.get('/get_grade/:schoolId', passport.authenticate('jwt', { session: false }), getGradeFormatsBySchoolId);
     router.get('/get_score/:schoolId', passport.authenticate('jwt', { session: false }), getScoreBySchoolId);
