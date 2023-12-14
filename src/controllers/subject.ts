@@ -4,6 +4,7 @@ import mySchool, { ISchool } from '../db/myschools';
 import { isValidObjectId, Aggregate, PopulateOptions } from 'mongoose'
 import mongoose, { Types } from 'mongoose';
 import Teacher, { ITeacher } from '../db/teacher';
+import SchoolClass, { ISchoolClass } from '../db/schoolClass';
 
 
 interface CreateSubjectRequest {
@@ -172,6 +173,30 @@ export const getSubjectByClassId: express.RequestHandler = async (req: Request, 
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const getClassBySubject: express.RequestHandler = async (req: Request, res: Response) => {
+  try {
+    const {subjectName, schoolId} = req.params
+    
+    const school = await mySchool.findById(schoolId);
+
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+
+    const schoolClass: ISchoolClass[] = await SchoolClass.find({ school: school._id, subjcet: subjectName });
+    
+    if (!schoolClass) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
+    
+    return res.status(200).json({message: "Class found", schoolClass});
+  } catch (error) {
+    console.error('Error getting class by subjcet:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+
+}
 
 
 export const getSubjectById: express.RequestHandler = async (req, res) => {

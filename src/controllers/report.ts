@@ -38,7 +38,7 @@ export const report: express.RequestHandler = async (req: Request, res: Response
       return res.status(400).json({ error: 'Student Report already exists for this term and session' });
     }
 
-              const total = Number(presentNo) - Number(sPresentNo);
+    const total = Number(presentNo) - Number(sPresentNo);
     const report = {
       presentNo: sPresentNo, absentNo: total, attentiveness, honesty, neatness, puntuality,
       leadershipRespon, handling, handWriting, publicSpeack, drawingPainting,

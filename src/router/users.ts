@@ -7,7 +7,7 @@ import { addTermAndSession, deleteTermSessionById, editTermAndSession, getSchool
 import { newsLetter, getLetterBySchoolId, sendNewsLetter, sendNewsLetterToAll, updateNewsLetterById, deleteLetterById, getLetterById } from '../controllers/newsLetter'
 import { createStudent, deleteStudentById, getStudentsByClassId, getStudentsById, getStudentsBySchoolId, updateStudentById } from '../controllers/student';
 import { deleteSchoolClassById, getSchoolClassById, getSchoolClassBySchoolId, schoolClass } from '../controllers/schoolClass';
-import { deleteSubjectById, getSubjectByClassId, getSubjectById, getSubjectBySchoolId, subject, updateSubject } from '../controllers/subject';
+import { deleteSubjectById, getClassBySubject, getSubjectByClassId, getSubjectById, getSubjectBySchoolId, subject, updateSubject } from '../controllers/subject';
 import { deleteScoreById, getScoreById, getScoreBySchoolId, score, updateScoreById } from '../controllers/score';
 import { createGradeFormat, deleteGradeFormatById, getGradeFormatById, getGradeFormatsBySchoolId, updateGradeById } from '../controllers/grade';
 import { deleteStudentScoreById, getClassGradeAverage, getClassPositions, getScoresById, getStudentGradesBySchoolId, getStudentScoreById, studentGrade, updateStudentScoreById } from '../controllers/studentGrade';
@@ -32,6 +32,9 @@ export default (router: express.Router) => {
     router.get('/get_teacher_byId/:id', 
     passport.authenticate('jwt', { session: false }),
      getTeachersById);
+    router.get('/get_class_by_subject/:subjectName/:schoolId', 
+    passport.authenticate('jwt', { session: false }),
+    getClassBySubject);
     router.get('/get_grade/:schoolId', passport.authenticate('jwt', { session: false }), getGradeFormatsBySchoolId);
     router.get('/get_score/:schoolId', passport.authenticate('jwt', { session: false }), getScoreBySchoolId);
     router.get('/get_class_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolClassById);
