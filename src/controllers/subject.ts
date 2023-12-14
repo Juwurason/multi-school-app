@@ -2,9 +2,7 @@ import express, { Request, Response } from 'express';
 import Subject, { ISubject } from '../db/subject';
 import mySchool, { ISchool } from '../db/myschools';
 import { isValidObjectId, Aggregate, PopulateOptions } from 'mongoose'
-import mongoose, { Types } from 'mongoose';
-import Teacher, { ITeacher } from '../db/teacher';
-import SchoolClass, { ISchoolClass } from '../db/schoolClass';
+
 
 
 interface CreateSubjectRequest {
@@ -184,7 +182,7 @@ export const getClassBySubject: express.RequestHandler = async (req: Request, re
       return res.status(404).json({ error: 'School not found' });
     }
 
-    const schoolClass: ISubject[] = await Subject.find({ school: school._id, subjcet: subjectName }).populate("schoolClass");
+    const schoolClass: ISubject[] = await Subject.find({ school: school._id, subjcet: subjectName })
     
     if (!schoolClass) {
       return res.status(404).json({ error: 'Class not found' });
