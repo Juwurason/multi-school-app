@@ -44,7 +44,7 @@ export default (router: express.Router) => {
     router.get('/get_student_byClassId/:classId', passport.authenticate('jwt', { session: false }), getStudentsByClassId);
     router.get('/get_school_byId/:id', passport.authenticate('jwt', { session: false }), getSchoolById);
     router.post('/delete_teacher/:id', passport.authenticate('jwt', { session: false }), deleteTeacherById);
-    router.post('/delete_subject/:subject/:schoolId', passport.authenticate('jwt', { session: false }), deleteSubjectById);
+    router.post('/delete_subject/:id', passport.authenticate('jwt', { session: false }), deleteSubjectById);
     router.post('/delete_school_class/:id', passport.authenticate('jwt', { session: false }), deleteSchoolClassById);
     router.post('/delete_student/:id', passport.authenticate('jwt', { session: false }), deleteStudentById);
     router.post('/add_teacher/:schoolId/teachers', upload.single('profilePicture'),
