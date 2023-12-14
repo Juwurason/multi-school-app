@@ -189,7 +189,7 @@ export const getClassBySubject: express.RequestHandler = async (req: Request, re
     }
 
     
-    return res.status(200).json({message: "Class found", schoolClass});
+    return res.status(200).json({message: "Class found successfully", schoolClass});
   } catch (error) {
     console.error('Error getting class by subjcet:', error);
     return res.status(500).json({ error: 'Internal server error' });
