@@ -260,19 +260,14 @@ export const updateSubject: express.RequestHandler = async (req, res) => {
 
 export const deleteSubjectById: express.RequestHandler = async (req, res) => {
   try {
-    const { subject, schoolId } = req.params;
+    const { id } = req.params;
 
-    const school: ISchool | null = await mySchool.findById(schoolId);
-
-    if (!school) {
-      return res.status(404).json({ error: 'School not found' });
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid teacher ID' });
     }
 
     // Find and delete the subject by schoolId and subject name
-    const deletedSubject = await Subject.findOneAndDelete({
-      school: school._id,
-      subject: subject
-    });
+    const deletedSubject = await Subject.findByIdAndDelete(id);
 
     if (!deletedSubject) {
       return res.status(404).json({ error: 'Subject not found' });
