@@ -184,11 +184,12 @@ export const getClassBySubject: express.RequestHandler = async (req: Request, re
       return res.status(404).json({ error: 'School not found' });
     }
 
-    const schoolClass: ISchoolClass[] = await SchoolClass.find({ school: school._id, subjcet: subjectName });
+    const schoolClass: ISubject[] = await Subject.find({ school: school._id, subjcet: subjectName }).populate("schoolClass");
     
     if (!schoolClass) {
       return res.status(404).json({ error: 'Class not found' });
     }
+
     
     return res.status(200).json({message: "Class found", schoolClass});
   } catch (error) {
