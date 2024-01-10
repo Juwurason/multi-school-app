@@ -101,7 +101,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
 
   } catch (error) {
     console.error('Error creating Score:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', error });
   }
 
 }
