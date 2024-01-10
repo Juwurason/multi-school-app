@@ -42,7 +42,7 @@ const studentGradeSchema: Schema = new Schema<IStudentGradeFormat>(
 );
 
 studentGradeSchema.pre<IStudentGradeFormat>('validate', async function (next) {
-  const studentGrade = this;
+  const studentGrade:any = this;
 
   // Fetch the school's score limits
   const schoolScores: IScore | null = await Score.findOne({ school: studentGrade.school });

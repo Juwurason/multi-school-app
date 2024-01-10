@@ -7,6 +7,7 @@ import Subject, { ISubject } from '../db/subject';
 import GradeFormat, { IGradeFormat } from '../db/grade';
 import SchoolClass, { ISchoolClass } from '../db/schoolClass';
 import Report, { IReport } from '../db/report';
+import Score, { IScore } from '../db/score';
 
 
 export const studentGrade: express.RequestHandler = async (req: Request, res: Response) => {
@@ -56,6 +57,22 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
 
     if (existingScore) {
       return res.status(400).json({ error: 'Student Score already exists for this subject this term' });
+    }
+
+    const schoolScores: IScore | null = await Score.findOne({ school: schoolId });
+
+    if (!schoolScores) {
+      return res.status(404).json({ error: 'School scores not found' });
+    }
+
+    // Check if CA and exam scores are within school limits
+
+    if (Number(ca) > Number(schoolScores.ca)) {
+      return res.status(400).json({ error: 'CA score exceeds school limit' });
+    }
+
+    if (Number(exam) > Number(schoolScores.exam)) {
+      return res.status(400).json({ error: 'Exam score exceeds school limit' });
     }
 
     const studentTotalScore: number = parseFloat(ca) + parseFloat(exam);
