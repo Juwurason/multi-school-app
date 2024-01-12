@@ -197,6 +197,15 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
         return res.status(404).json({ error: 'School class not found' });
       }
 
+      if (existingTeacher.teacherClass !== teacherClass) {
+        // Teacher class has changed, update the old class
+        const oldClass = await SchoolClass.findById(existingTeacher.teacherClass);
+        if (oldClass) {
+          oldClass.assignedTeacher = null; // Remove teacher from old class
+          await oldClass.save();
+        }
+      }
+
       // Check if a new image is provided in the request
       if (req.file) {
         // Check if there is an existing profile picture
