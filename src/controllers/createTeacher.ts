@@ -128,13 +128,20 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
         teacherData.profilePictureUrl = fileUrl;
       }
 
-      if (teacherClass) {
-        teacherData.teacherClass = teacherClass
-      }
-
-     
       // Create the teacher object
     const teacher: ITeacher = new Teacher(teacherData);
+
+    if (teacherClass) {
+      const schoolClass = await SchoolClass.findById(teacherClass);
+
+      if (!schoolClass) {
+        return res.status(404).json({ error: 'School class not found' });
+      }
+      
+      teacherData.teacherClass = teacherClass
+      // Update the assignedTeacher field in the schoolClass document
+    schoolClass.assignedTeacher = teacher._id; // Use the teacher's ObjectId
+    }
     
       if (teacherSubjects) {
         const subjectIdsArray = teacherSubjects.split(',');
