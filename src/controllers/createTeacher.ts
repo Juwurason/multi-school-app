@@ -124,28 +124,24 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
         staffId: generateStaffId(schoolShortName),
       };
 
-      // if (teacherSubjects && teacherSubjects.length > 0) {
-      //   teacherData.teacherSubject = teacherSubjects;
-      // }
-
       if (fileUrl) {
         teacherData.profilePictureUrl = fileUrl;
       }
 
+      if (teacherClass) {
+        teacherData.teacherClass = teacherClass
+      }
+
+     
       // Create the teacher object
-      // const teacher: ITeacher = new Teacher(teacherData);
-      // Save the teacher to the database
-      // await teacher.save();
-      const subjectIdsArray = teacherSubjects.split(',');
+    const teacher: ITeacher = new Teacher(teacherData);
+    
+      if (teacherSubjects) {
+        const subjectIdsArray = teacherSubjects.split(',');
 
       const cleanedTeacherSubjects: string[] = subjectIdsArray.map((subjectId: string) => subjectId.trim());
 
       teacherData.teacherSubject = cleanedTeacherSubjects;
-
-    // Create the teacher object
-    const teacher: ITeacher = new Teacher(teacherData);
-    // Save the teacher to the database
-    await teacher.save();
 
       // Assign the teacher to the specified subjects
       for (const subjectId of cleanedTeacherSubjects) {
@@ -156,12 +152,14 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
           await subject.save();
         }
       }
-
+      }
+    
+    
+    // Save the teacher to the database
+    await teacher.save();
 
       return res.status(201).json({ message: 'Teacher created successfully. Login details have been sent to their email.', teacher });
     }
-
-
 
   } catch (error) {
     console.error('Error creating teacher:', error);
