@@ -137,8 +137,9 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
       if (!schoolClass) {
         return res.status(404).json({ error: 'School class not found' });
       }
-      
+
       teacherData.teacherClass = teacherClass
+      teacherData.secClassTeacher = true
       // Update the assignedTeacher field in the schoolClass document
     schoolClass.assignedTeacher = teacher._id; // Use the teacher's ObjectId
     }

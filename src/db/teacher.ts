@@ -12,6 +12,7 @@ export interface ITeacher extends Document {
   password: string;
   teacherClass: Schema.Types.ObjectId;
   staffId: string;
+  secClassTeacher: boolean;
   school: Schema.Types.ObjectId; 
   teacherSubject: Schema.Types.ObjectId | Schema.Types.ObjectId[] | null;
   profilePictureUrl?: string;
@@ -63,6 +64,10 @@ const teacherSchema: Schema = new Schema<ITeacher>({
   isEmailVerified: {
     type: Boolean,
     default: false, // New teachers are not verified by default
+  },
+  secClassTeacher: {
+    type: Boolean,
+    default: false,
   },
   otp: String, // Field to store OTP (optional)
   otpExpiration: Date, // Field to store OTP expiration time (optional)
