@@ -140,6 +140,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
         staffId: user.staffId,
         teacherClass: user.teacherClass,
         teacherSubject: user.teacherSubject,
+        secSchoolClass: user.secClassTeacher,
         schoolCategory: school.school_category,
         gender: user.gender,
         role: user.role,
