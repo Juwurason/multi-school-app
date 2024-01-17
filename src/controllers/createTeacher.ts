@@ -128,28 +128,31 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
         teacherData.profilePictureUrl = fileUrl;
       }
 
-      // Create the teacher object
-    const teacher: ITeacher = new Teacher(teacherData);
+      if (teacherClass) {
+        const schoolClass = await SchoolClass.findById(teacherClass);
+        if (!schoolClass) {
+          return res.status(404).json({ error: 'School class not found' });
+        }
+        teacherData.teacherClass = teacherClass
+        teacherData.secClassTeacher = true
+        const teacher: ITeacher = new Teacher(teacherData);
+        await teacher.save();
+        schoolClass.assignedTeacher = teacher._id; // Use the teacher's ObjectId
 
-    if (teacherClass) {
-      const schoolClass = await SchoolClass.findById(teacherClass);
-
-      if (!schoolClass) {
-        return res.status(404).json({ error: 'School class not found' });
+    await schoolClass.save();
       }
 
-      teacherData.teacherClass = teacherClass
-      teacherData.secClassTeacher = true
-      // Update the assignedTeacher field in the schoolClass document
-    schoolClass.assignedTeacher = teacher._id; // Use the teacher's ObjectId
-    }
-    
       if (teacherSubjects) {
         const subjectIdsArray = teacherSubjects.split(',');
 
       const cleanedTeacherSubjects: string[] = subjectIdsArray.map((subjectId: string) => subjectId.trim());
 
       teacherData.teacherSubject = cleanedTeacherSubjects;
+
+    // Create the teacher object
+    const teacher: ITeacher = new Teacher(teacherData);
+    // Save the teacher to the database
+    await teacher.save();
 
       // Assign the teacher to the specified subjects
       for (const subjectId of cleanedTeacherSubjects) {
@@ -161,13 +164,13 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
         }
       }
       }
-    
-    
-    // Save the teacher to the database
-    await teacher.save();
+      const teacher: ITeacher = new Teacher(teacherData);
+
 
       return res.status(201).json({ message: 'Teacher created successfully. Login details have been sent to their email.', teacher });
     }
+
+
 
   } catch (error) {
     console.error('Error creating teacher:', error);
