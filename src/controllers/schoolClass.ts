@@ -115,3 +115,11 @@ export const schoolClass: express.RequestHandler = async (req: Request, res: Res
     return res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+export const promoteStudent: express.RequestHandler = async (req: Request, res: Response) => {
+    try {
+      
+    } catch (error) {
+      
+    }
+}
