@@ -139,30 +139,30 @@ export const createTeacher: express.RequestHandler = async (req: Request, res: R
         await teacher.save();
         schoolClass.assignedTeacher = teacher._id; // Use the teacher's ObjectId
 
-    await schoolClass.save();
+        await schoolClass.save();
       }
 
       if (teacherSubjects) {
         const subjectIdsArray = teacherSubjects.split(',');
 
-      const cleanedTeacherSubjects: string[] = subjectIdsArray.map((subjectId: string) => subjectId.trim());
+        const cleanedTeacherSubjects: string[] = subjectIdsArray.map((subjectId: string) => subjectId.trim());
 
-      teacherData.teacherSubject = cleanedTeacherSubjects;
+        teacherData.teacherSubject = cleanedTeacherSubjects;
 
-    // Create the teacher object
-    const teacher: ITeacher = new Teacher(teacherData);
-    // Save the teacher to the database
-    await teacher.save();
+        // Create the teacher object
+        const teacher: ITeacher = new Teacher(teacherData);
+        // Save the teacher to the database
+        await teacher.save();
 
-      // Assign the teacher to the specified subjects
-      for (const subjectId of cleanedTeacherSubjects) {
-        const subject = await Subject.findById(subjectId);
+        // Assign the teacher to the specified subjects
+        for (const subjectId of cleanedTeacherSubjects) {
+          const subject = await Subject.findById(subjectId);
 
-        if (subject) {
-          subject.teacher = teacher._id; // Use the teacher's ObjectId
-          await subject.save();
+          if (subject) {
+            subject.teacher = teacher._id; // Use the teacher's ObjectId
+            await subject.save();
+          }
         }
-      }
       }
       const teacher: ITeacher = new Teacher(teacherData);
 
@@ -317,18 +317,20 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
       // Save the updated teacher to the database
       await existingTeacher.save();
 
-      
-      const subjectIdsArray = teacherSubjects.split(',');
 
-      const cleanedTeacherSubjects: string[] = subjectIdsArray.map((subjectId: string) => subjectId.trim());
+      if (teacherSubjects) {
+        const subjectIdsArray = teacherSubjects.split(',');
 
-      // Assign the teacher to the specified subjects
-      for (const subjectId of cleanedTeacherSubjects) {
-        const subject = await Subject.findById(subjectId);
+        const cleanedTeacherSubjects: string[] = subjectIdsArray.map((subjectId: string) => subjectId.trim());
 
-        if (subject) {
-          subject.teacher = existingTeacher._id; // Use the teacher's ObjectId
-          await subject.save();
+        // Assign the teacher to the specified subjects
+        for (const subjectId of cleanedTeacherSubjects) {
+          const subject = await Subject.findById(subjectId);
+
+          if (subject) {
+            subject.teacher = existingTeacher._id; // Use the teacher's ObjectId
+            await subject.save();
+          }
         }
       }
     }
@@ -336,7 +338,7 @@ export const updateTeacherById: express.RequestHandler = async (req: Request, re
     return res.status(200).json({ message: 'Teacher updated successfully', existingTeacher });
 
   }
-   catch (error) {
+  catch (error) {
     console.error('Error updating teacher by ID:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }

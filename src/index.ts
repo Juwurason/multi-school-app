@@ -32,6 +32,10 @@ const MONGO_URL = "mongodb+srv://sunday:ajibolason@sunday.ssmpiyu.mongodb.net/?r
 
 mongoose.Promise = Promise
 mongoose.connect(MONGO_URL)
+mongoose.connection.on('connected', () => {
+    console.log('Mongoose connected to the DB.');
+});
+
 mongoose.connection.on('error', (error: Error) => (error));
 
 app.use('/', router())
