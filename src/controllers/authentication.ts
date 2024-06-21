@@ -1,4 +1,4 @@
-import { sendTestEmail, sendVerificationEmail } from '../helpers/send-otp';
+import { sendVerificationEmail } from '../helpers/send-otp';
 import express, { Request, Response } from 'express';
 import mySchool, { ISchool } from '../db/myschools'; // Import your School model
 import Teacher, { ITeacher } from '../db/teacher';
@@ -173,21 +173,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
   }
 };
 
-export const testEmailHandler = async (req: Request, res: Response): Promise<Response> => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: 'Email address is required' });
-    }
 
-    await sendTestEmail(email, 'Test Email', '<h1>Hello</h1><p>This is a test email from our system.</p>');
-    console.log('Email sent successfully');
-    return res.status(200).json({ message: 'Email sent successfully' });
-  } catch (error) {
-    console.error('Error sending email:', error);
-    return res.status(500).json({ error: 'Internal server error' });
-  }
-};
 
 export const forgetPassword = async (req: express.Request, res: express.Response) => {
 
