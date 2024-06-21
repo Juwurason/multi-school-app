@@ -69,7 +69,7 @@ export default (router: express.Router) => {
   router.get('/get_student_report/:studentId', passport.authenticate('jwt', { session: false }), getReportsByStudentId);
   router.post('/delete_report/:reportId', passport.authenticate('jwt', { session: false }), deleteReportById);
   router.post('/add_student_score/:schoolId/:studentId/:subject',
-    passport.authenticate('jwt', { session: false }),
+    // passport.authenticate('jwt', { session: false }),
     studentGrade);
   router.post('/update_student_score/:schoolId/:studentId/:subject',
     //  passport.authenticate('jwt', { session: false }),
@@ -89,7 +89,7 @@ export default (router: express.Router) => {
     passport.authenticate('jwt', { session: false }),
     getClassPositions);
   router.get('/get_student_score_byId/:id',
-    passport.authenticate('jwt', { session: false }),
+    // passport.authenticate('jwt', { session: false }),
     getScoresById);
   router.get('/get_student_score_&_report/:studentId/:term/:session',
     passport.authenticate('jwt', { session: false }), getReportAndScoreByEmail);

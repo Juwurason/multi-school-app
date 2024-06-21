@@ -59,6 +59,7 @@ export const studentGrade: express.RequestHandler = async (req: Request, res: Re
       return res.status(400).json({ error: 'Student Score already exists for this subject this term' });
     }
 
+
     const schoolScores: IScore | null = await Score.findOne({ school: schoolId });
 
     if (!schoolScores) {
@@ -163,6 +164,21 @@ export const updateStudentScoreById: express.RequestHandler = async (req: Reques
       return res.status(404).json({ error: 'Student grade not found for the specified subject' });
     }
 
+    const schoolScores: IScore | null = await Score.findOne({ school: schoolId });
+
+    if (!schoolScores) {
+      return res.status(404).json({ error: 'School scores not found' });
+    }
+
+    // Check if CA and exam scores are within school limits
+
+    if (Number(ca) > Number(schoolScores.ca)) {
+      return res.status(400).json({ error: 'CA score exceeds school limit' });
+    }
+
+    if (Number(exam) > Number(schoolScores.exam)) {
+      return res.status(400).json({ error: 'Exam score exceeds school limit' });
+    }
     // Update the student's grade with the new exam and ca scores
     score.exam = exam;
     score.ca = ca;

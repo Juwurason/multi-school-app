@@ -17,14 +17,14 @@ import { isValidObjectId } from 'mongoose'
 //       return res.status(404).json({ error: 'School not found' });
 //     }
 
-    
+
 //       const scoreData: any = {
 //         exam,
 //         ca,
 //         school: school._id,
 //       };
 
-     
+
 //     const score: IScore = new Score(scoreData)
 
 //     await score.save();
@@ -34,66 +34,56 @@ import { isValidObjectId } from 'mongoose'
 //         console.error('Error creating Score:', error);
 //     return res.status(500).json({ error: 'Internal server error' });
 //     }
-    
+
 // }
 
 export const score: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-      const { exam, ca } = req.body;
-      const { schoolId } = req.params;
+    const { exam, ca } = req.body;
+    const { schoolId } = req.params;
 
-      // Check if the school with the provided schoolId exists
-      const school: ISchool | null = await mySchool.findById(schoolId);
+    // Check if the school with the provided schoolId exists
+    const school: ISchool | null = await mySchool.findById(schoolId);
 
-      if (!school) {
-          return res.status(404).json({ error: 'School not found' });
-      }
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
 
-      // Parse exam and ca as numbers
-      let examScore: number = parseFloat(exam);
-      let caScore: number = parseFloat(ca);
+    // Parse exam and ca as numbers
+    let examScore: number = parseFloat(exam);
+    let caScore: number = parseFloat(ca);
 
-      // Calculate the total score
-      let totalScore: number = examScore + caScore;
+    // Calculate the total score
+    let totalScore: number = examScore + caScore;
 
-      // Adjust values if the total is not 100
-      if (totalScore !== 100) {
-          if (totalScore > 100) {
-              // Reduce exam score proportionally to make total 100
-              const examProportion: number = examScore / totalScore;
-              examScore = Math.round(examProportion * 100);
-              caScore = 100 - examScore;
-          } else {
-              // Increase exam score proportionally to make total 100
-              const caProportion: number = caScore / totalScore;
-              caScore = Math.round(caProportion * 100);
-              examScore = 100 - caScore;
-          }
-      }
+    // Adjust values if the total is not 100
+    if (totalScore !== 100) {
+      return res.status(400).json({ error: 'The total of exam and CA scores must exactly equal 100.' });
+    }
 
-      // Create the score object
-      const scoreData: any = {
-          exam: examScore,
-          ca: caScore,
-          school: school._id,
-      };
+    // Create the score object
+    const scoreData: any = {
+      exam: examScore,
+      ca: caScore,
+      school: school._id,
+    };
 
-      const score: IScore = new Score(scoreData);
+    const score: IScore = new Score(scoreData);
 
-      await score.save();
-      return res.status(201).json({ message: 'Score created successfully', score });
+    await score.save();
+    return res.status(201).json({ message: 'Score created successfully', score });
   } catch (error) {
-      console.error('Error creating Score:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error creating Score:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
 
 export const updateScoreById: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-   
-        const { exam, ca } = req.body
-        const { id } = req.params;
+
+    const { exam, ca } = req.body
+    const { id } = req.params;
 
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
     if (!isValidObjectId(id)) {
@@ -115,19 +105,19 @@ export const updateScoreById: express.RequestHandler = async (req: Request, res:
 
     // Adjust values if the total is not 100
     if (totalScore !== 100) {
-        if (totalScore > 100) {
-            // Reduce exam score proportionally to make total 100
-            const examProportion: number = examScore / totalScore;
-            examScore = Math.round(examProportion * 100);
-            caScore = 100 - examScore;
-        } else {
-            // Increase exam score proportionally to make total 100
-            const caProportion: number = caScore / totalScore;
-            caScore = Math.round(caProportion * 100);
-            examScore = 100 - caScore;
-        }
+      if (totalScore > 100) {
+        // Reduce exam score proportionally to make total 100
+        const examProportion: number = examScore / totalScore;
+        examScore = Math.round(examProportion * 100);
+        caScore = 100 - examScore;
+      } else {
+        // Increase exam score proportionally to make total 100
+        const caProportion: number = caScore / totalScore;
+        caScore = Math.round(caProportion * 100);
+        examScore = 100 - caScore;
+      }
     }
-    
+
 
     // Update other score information
     existingScore.exam = examScore;
@@ -144,50 +134,50 @@ export const updateScoreById: express.RequestHandler = async (req: Request, res:
 };
 
 export const getScoreBySchoolId: express.RequestHandler = async (req, res) => {
-    try {
-      const { schoolId } = req.params;
-  
-      // Check if the school with the provided schoolId exists
-      const school = await mySchool.findById(schoolId);
-  
-      if (!school) {
-        return res.status(404).json({ error: 'School not found' });
-      }
-  
-    
-      const score = await Score.find({ school: school._id });
-  
-      return res.status(200).json(score);
-    } catch (error) {
-      console.error('Error fetching score by schoolId:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+  try {
+    const { schoolId } = req.params;
 
-  export const getScoreById: express.RequestHandler = async (req, res) => {
-    try {
-      const { id } = req.params;
-  
-      // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
-      if (!isValidObjectId(id)) {
-        return res.status(400).json({ error: 'Invalid ID' });
-      }
-  
-      const score: IScore | null = await Score.findById(id);
-  
-      if (!score) {
-        return res.status(404).json({ error: 'Score not found' });
-      }
-  
-      return res.status(200).json(score);
-    } catch (error) {
-      console.error('Error fetching score by Id:', error);
-      return res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+    // Check if the school with the provided schoolId exists
+    const school = await mySchool.findById(schoolId);
 
-  export const deleteScoreById: express.RequestHandler = async (req, res) => {
-    try {
+    if (!school) {
+      return res.status(404).json({ error: 'School not found' });
+    }
+
+
+    const score = await Score.find({ school: school._id });
+
+    return res.status(200).json(score);
+  } catch (error) {
+    console.error('Error fetching score by schoolId:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getScoreById: express.RequestHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ error: 'Invalid ID' });
+    }
+
+    const score: IScore | null = await Score.findById(id);
+
+    if (!score) {
+      return res.status(404).json({ error: 'Score not found' });
+    }
+
+    return res.status(200).json(score);
+  } catch (error) {
+    console.error('Error fetching score by Id:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteScoreById: express.RequestHandler = async (req, res) => {
+  try {
     const { id } = req.params;
 
     // Check if the provided ID is a valid ObjectId (Mongoose ObjectId)
@@ -209,4 +199,4 @@ export const getScoreBySchoolId: express.RequestHandler = async (req, res) => {
   }
 };
 
-  
+
