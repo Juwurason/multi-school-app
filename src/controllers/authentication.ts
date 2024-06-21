@@ -1,8 +1,4 @@
-
-
-import { getUserByEmail, createUser } from '../db/users';
-import { sendVerificationEmail } from '../helpers/send-otp';
-
+import { sendTestEmail, sendVerificationEmail } from '../helpers/send-otp';
 import express, { Request, Response } from 'express';
 import mySchool, { ISchool } from '../db/myschools'; // Import your School model
 import Teacher, { ITeacher } from '../db/teacher';
@@ -15,13 +11,10 @@ import { isValidObjectId } from 'mongoose'
 import moment from 'moment-timezone';
 import 'moment-timezone';
 import { v4 as uuidv4 } from 'uuid';
-import { admin } from '../firebaseConfig';
 import * as path from 'path';
-
 import { ref, uploadBytes, getDownloadURL, deleteObject, getMetadata } from "firebase/storage"
 import { Storage, Bucket_url } from '../config/firebase';
 import TermSession, { ITermSession } from '../db/termSession';
-import users from 'router/users';
 
 
 // Step 1 - Verify Email
@@ -59,11 +52,20 @@ export const verifyEmail = async (req: express.Request, res: express.Response) =
 };
 
 
-let DateCreat = new Date()
-let timeZone = 'Africa/Lagos';
-let datetime = moment(DateCreat).tz(timeZone).format('YYYY-MM-DD HH:mm:ss');
-const expiry = new Date(DateCreat.getTime() + 10 * 60 * 1000);
-let otp = Math.floor(100000 + Math.random() * 900000).toString();
+// let DateCreat = new Date()
+// let timeZone = 'Africa/Lagos';
+// let datetime = moment(DateCreat).tz(timeZone).format('YYYY-MM-DD HH:mm:ss');
+// const expiry = new Date(DateCreat.getTime() + 10 * 60 * 1000);
+// let otp = Math.floor(100000 + Math.random() * 900000).toString();
+// Current date and time in Africa/Lagos timezone
+const timeZone = 'Africa/Lagos';
+const now = moment().tz(timeZone);
+
+// OTP expiration time (10 minutes from now)
+const expiry = now.add(10, 'minutes').format('YYYY-MM-DD HH:mm:ss');
+
+// Generate a six-digit OTP
+const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
 
 // Step 2 - Confirm Password
@@ -71,7 +73,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
   try {
     const { email, password, role } = req.body;
 
-    
+
     if (!role) {
       return res.status(401).json({ message: 'Invalid role.' });
     }
@@ -85,7 +87,7 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
       }
 
       const passwordMatch = await bcrypt.compare(password, user.password);
-      
+
       if (!passwordMatch) {
         return res.status(401).json({ message: 'Invalid password.' });
       }
@@ -108,13 +110,13 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
     } else if (role === "Teacher") {
       // Find the user in your database based on the email
       user = await Teacher.findOne({ email })
-      .populate('teacherClass')
-      .populate('teacherSubject');
+        .populate('teacherClass')
+        .populate('teacherSubject');
 
       if (!user) {
         return res.status(401).json({ message: 'Invalid email.' });
       }
-      
+
       const passwordMatch = await bcrypt.compare(password, user.password);
 
       if (!passwordMatch) {
@@ -171,6 +173,22 @@ export const confirmPassword = async (req: express.Request, res: express.Respons
   }
 };
 
+export const testEmailHandler = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email address is required' });
+    }
+
+    await sendTestEmail(email, 'Test Email', '<h1>Hello</h1><p>This is a test email from our system.</p>');
+    console.log('Email sent successfully');
+    return res.status(200).json({ message: 'Email sent successfully' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 export const forgetPassword = async (req: express.Request, res: express.Response) => {
 
   try {
@@ -181,23 +199,23 @@ export const forgetPassword = async (req: express.Request, res: express.Response
     if (!existingTeacher && !existingSchool) {
       return res.status(404).json({ error: 'Email not found' });
     }
-    
-    
+
+
     if (existingTeacher) {
       existingTeacher.otp = otp
       await existingTeacher.save();
-    }else if (existingSchool) {
+    } else if (existingSchool) {
       existingSchool.otp = otp
       await existingSchool.save();
     }
 
     await sendVerificationEmail(email, otp);
 
-     // Use different messages based on whether it's a teacher or school
-     const messageType = existingTeacher ? 'Teacher' : 'School';
-     const successMessage = `OTP sent successfully to ${messageType}'s email.`;
- 
-     res.status(200).json({ message: successMessage, status: "Success" });
+    // Use different messages based on whether it's a teacher or school
+    const messageType = existingTeacher ? 'Teacher' : 'School';
+    const successMessage = `OTP sent successfully to ${messageType}'s email.`;
+
+    res.status(200).json({ message: successMessage, status: "Success" });
   } catch (error) {
     console.log(error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -206,33 +224,34 @@ export const forgetPassword = async (req: express.Request, res: express.Response
 }
 
 export const verifyOtpAndResetPassword = async (req: express.Request, res: express.Response) => {
-    try {
+  try {
 
-      const { email, otp, newPassword } = req.body;
-      const existingTeacher = await Teacher.findOne({ email });
-      const existingSchool = await mySchool.findOne({ email });
-  
-      if (!existingTeacher && !existingSchool) {
-        return res.status(404).json({ error: 'User not found', message: 'User not found' });
-      }
+    const { email, otp, newPassword } = req.body;
+    const existingTeacher = await Teacher.findOne({ email });
+    const existingSchool = await mySchool.findOne({ email });
 
-      if (existingTeacher && existingTeacher.otp === otp) {
-        existingTeacher.password = await bcrypt.hash(newPassword, 10);
-        await existingTeacher.save();
-        return res.status(200).json({ message: 'Password reset successful for Teacher.', status: "Success" });
-      }else if (existingSchool && existingSchool.otp === otp) {
-        existingSchool.password = await bcrypt.hash(newPassword, 10);
-        await existingSchool.save();
-        return res.status(200).json({ message: 'Password reset successful for School.', status: "Success" });
-      }else {
-        return res.status(401).json({ error: 'Invalid OTP or OTP has expired.' });
-      }
-
-    } catch (error) {
-      console.error('Error in verifyOtpAndResetPassword:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+    if (!existingTeacher && !existingSchool) {
+      return res.status(404).json({ error: 'User not found', message: 'User not found' });
     }
+
+    if (existingTeacher && existingTeacher.otp === otp) {
+      existingTeacher.password = await bcrypt.hash(newPassword, 10);
+      await existingTeacher.save();
+      return res.status(200).json({ message: 'Password reset successful for Teacher.', status: "Success" });
+    } else if (existingSchool && existingSchool.otp === otp) {
+      existingSchool.password = await bcrypt.hash(newPassword, 10);
+      await existingSchool.save();
+      return res.status(200).json({ message: 'Password reset successful for School.', status: "Success" });
+    } else {
+      return res.status(401).json({ error: 'Invalid OTP or OTP has expired.' });
+    }
+
+  } catch (error) {
+    console.error('Error in verifyOtpAndResetPassword:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
 }
+
 
 export const register = async (req: Request, res: Response) => {
   try {

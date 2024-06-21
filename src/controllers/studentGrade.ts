@@ -156,7 +156,7 @@ export const updateStudentScoreById: express.RequestHandler = async (req: Reques
     let score: IStudentGradeFormat | null = await StudentGradeFormat.findOne({
       school: school._id,
       student: student._id,
-      subject: subjectName
+      subject: subjectName._id
     });
 
     if (!score) {
@@ -166,8 +166,8 @@ export const updateStudentScoreById: express.RequestHandler = async (req: Reques
     // Update the student's grade with the new exam and ca scores
     score.exam = exam;
     score.ca = ca;
+    score.term = score.term
 
-   
     // Recalculate gradeRemark based on new scores and existing grade ranges
     const grades: IGradeFormat[] | null = await GradeFormat.find({
       school: school._id
@@ -232,7 +232,7 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
     for (const score of scores) {
       try {
         await score.validate();
-        validatedScores.push({score, studentName: student.name, studentlastName: student.lastName});
+        validatedScores.push({ score, studentName: student.name, studentlastName: student.lastName });
       } catch (error) {
         // Handle validation error, e.g., log the error or respond with an error message
         console.error('Score validation error:', error);
@@ -241,7 +241,7 @@ export const getStudentScoreById: express.RequestHandler = async (req, res) => {
 
     const reports: IReport = await Report.findOne({ student: student._id, term: term, session: session });
 
-    return res.status(200).json({validatedScores, reports});
+    return res.status(200).json({ validatedScores, reports });
     //   return res.status(200).json(score);
   } catch (error) {
     console.error('Error fetching score by schoolId:', error);
@@ -305,7 +305,7 @@ export const getStudentGradesBySchoolId: express.RequestHandler = async (req: Re
       return res.status(404).json({ error: 'School not found' });
     }
 
-    const {term, session} = school
+    const { term, session } = school
     // Fetch all student grades for the school
     const studentGrades: IStudentGradeFormat[] | null = await StudentGradeFormat.find({
       school: school._id,
@@ -356,15 +356,15 @@ export const getClassGradeAverage: express.RequestHandler = async (req: Request,
         // Calculate average
         const average: number =
           scores.reduce((total: number, score: IStudentGradeFormat) => total + (Number(score.ca) + Number(score.exam)), 0) / scores.length;
-      
+
         // Determine grade based on the average (You'll need to implement this part based on your grading system)
         // const grade: any = determineGrade(average); // Implement determineGrade function
-      
+
         // Store the average and grade in the subjectAverages object
         subjectAverages[subject.subject] = average;
-    }
-      
-      
+      }
+
+
     }
 
     return res.status(200).json({ subjectAverages });
@@ -384,43 +384,43 @@ export const getClassGradeAverage: express.RequestHandler = async (req: Request,
 
 export const getClassPositions: express.RequestHandler = async (req: Request, res: Response) => {
   try {
-      const { classId } = req.params;
+    const { classId } = req.params;
 
-      // Find the school class by ID
-      const schoolClass: ISchoolClass | null = await SchoolClass.findById(classId);
+    // Find the school class by ID
+    const schoolClass: ISchoolClass | null = await SchoolClass.findById(classId);
 
-      if (!schoolClass) {
-          return res.status(404).json({ error: 'Class not found' });
-      }
+    if (!schoolClass) {
+      return res.status(404).json({ error: 'Class not found' });
+    }
 
-      // Fetch all students in the same class
-      const classStudents: IStudent[] = await Student.find({ studentClass: schoolClass });
+    // Fetch all students in the same class
+    const classStudents: IStudent[] = await Student.find({ studentClass: schoolClass });
 
-      // Fetch scores for all students in the same class
-      const scores: IStudentGradeFormat[] = await StudentGradeFormat.find({
-          student: { $in: classStudents.map((s) => s._id) },
-      });
+    // Fetch scores for all students in the same class
+    const scores: IStudentGradeFormat[] = await StudentGradeFormat.find({
+      student: { $in: classStudents.map((s) => s._id) },
+    });
 
-      // Calculate the total marks for each student
-      const totalMarksMap: Record<string, number> = {};
-      scores.forEach((score) => {
-          const totalMarks = Number(score.ca) + Number(score.exam);
-          totalMarksMap[score.student.toString()] = totalMarks;
-      });
+    // Calculate the total marks for each student
+    const totalMarksMap: Record<string, number> = {};
+    scores.forEach((score) => {
+      const totalMarks = Number(score.ca) + Number(score.exam);
+      totalMarksMap[score.student.toString()] = totalMarks;
+    });
 
-      // Determine the position based on total marks for each student
-      const positions = classStudents.map((s) => {
-          const totalMarks = totalMarksMap[s._id.toString()] || 0;
-          const position = classStudents
-              .map((otherStudent) => totalMarksMap[otherStudent._id.toString()] || 0)
-              .filter((otherTotalMarks) => otherTotalMarks > totalMarks).length + 1;
+    // Determine the position based on total marks for each student
+    const positions = classStudents.map((s) => {
+      const totalMarks = totalMarksMap[s._id.toString()] || 0;
+      const position = classStudents
+        .map((otherStudent) => totalMarksMap[otherStudent._id.toString()] || 0)
+        .filter((otherTotalMarks) => otherTotalMarks > totalMarks).length + 1;
 
-          return { studentFirstName: s.name, studentLastName: s.lastName, position };
-      });
+      return { studentFirstName: s.name, studentLastName: s.lastName, position };
+    });
 
-      return res.status(200).json({ positions });
+    return res.status(200).json({ positions });
   } catch (error) {
-      console.error('Error getting class positions:', error);
-      return res.status(500).json({ error: 'Internal server error' });
+    console.error('Error getting class positions:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };

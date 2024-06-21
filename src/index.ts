@@ -1,4 +1,4 @@
-import express from  "express";
+import express from "express";
 import http from "http";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
@@ -23,16 +23,19 @@ app.use(passport.initialize());
 
 const server = http.createServer(app)
 
-server.listen(8080, ()=>{
+server.listen(8080, () => {
     console.log("server running on http://localhost:8080/");
-    
+
 })
 
 const MONGO_URL = "mongodb+srv://sunday:ajibolason@sunday.ssmpiyu.mongodb.net/?retryWrites=true&w=majority"
-// "mongodb+srv://sunday:<password>@sunday.ssmpiyu.mongodb.net/?retryWrites=true&w=majority"
 
 mongoose.Promise = Promise
 mongoose.connect(MONGO_URL)
+mongoose.connection.on('connected', () => {
+    console.log('Mongoose connected to the DB.');
+});
+
 mongoose.connection.on('error', (error: Error) => (error));
-    
+
 app.use('/', router())

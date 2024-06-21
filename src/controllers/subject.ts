@@ -109,42 +109,42 @@ export const getSubjectBySchoolId: express.RequestHandler = async (req, res) => 
 
     if (school.school_category === "Primary") {
       // Use aggregation framework to group subjects by their names and populate associated classes
-    const subjects: Aggregate<any[]> = Subject.aggregate([
-      {
-        $match: { school: school._id },
-      },
-      {
-        $group: {
-          _id: '$subject', // Group by subject name
-          schoolClass: {
-            $push: '$schoolClass', // Push associated classes into an array
+      const subjects: Aggregate<any[]> = Subject.aggregate([
+        {
+          $match: { school: school._id },
+        },
+        {
+          $group: {
+            _id: '$subject', // Group by subject name
+            schoolClass: {
+              $push: '$schoolClass', // Push associated classes into an array
+            },
           },
         },
-      },
-      {
-        $project: {
-          subject: '$_id', // Rename the grouped field to 'subject'
-          schoolClass: 1, // Include the schoolClass field
-          _id: 0, // Exclude the default _id field from the output
+        {
+          $project: {
+            subject: '$_id', // Rename the grouped field to 'subject'
+            schoolClass: 1, // Include the schoolClass field
+            _id: 0, // Exclude the default _id field from the output
+          },
         },
-      },
 
-    ]);
+      ]);
 
-    // Execute aggregation and populate classes with assigned teachers
-    const populatedSubjects = await subjects.exec();
-    const options: PopulateOptions[] = [
-      { path: 'schoolClass', populate: { path: 'assignedTeacher', model: 'Teacher' } },
-      { path: 'schoolClass', model: 'SchoolClass' }
-    ];
-    const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
-    return res.status(200).json(subjectsWithPopulatedClasses);
+      // Execute aggregation and populate classes with assigned teachers
+      const populatedSubjects = await subjects.exec();
+      const options: PopulateOptions[] = [
+        { path: 'schoolClass', populate: { path: 'assignedTeacher', model: 'Teacher' } },
+        { path: 'schoolClass', model: 'SchoolClass' }
+      ];
+      const subjectsWithPopulatedClasses = await Subject.populate(populatedSubjects, options);
+      return res.status(200).json(subjectsWithPopulatedClasses);
     } else if (school.school_category === 'Secondary') {
       // For secondary school, fetch subjects without aggregation
       const subjects = await Subject.find({ school: school._id });
       return res.status(200).json(subjects);
     }
-    } catch (error) {
+  } catch (error) {
     console.error('Error fetching subject by schoolId:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
@@ -250,7 +250,7 @@ export const updateSubject: express.RequestHandler = async (req, res) => {
     existingSubject.schoolClass = schoolClassIds
     await existingSubject.save()
 
-    return res.status(200).json({message: "Subject updated successfully"});
+    return res.status(200).json({ message: "Subject updated successfully" });
   } catch (error) {
     console.error('Error fetching subject by Id:', error);
     return res.status(500).json({ error: 'Internal server error' });
@@ -263,7 +263,7 @@ export const deleteSubjectById: express.RequestHandler = async (req, res) => {
     const { id } = req.params;
 
     if (!isValidObjectId(id)) {
-      return res.status(400).json({ error: 'Invalid teacher ID' });
+      return res.status(400).json({ error: 'Invalid Subject ID' });
     }
 
     // Find and delete the subject by schoolId and subject name
