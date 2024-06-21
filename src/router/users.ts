@@ -89,7 +89,7 @@ export default (router: express.Router) => {
     passport.authenticate('jwt', { session: false }),
     getClassPositions);
   router.get('/get_student_score_byId/:id',
-    // passport.authenticate('jwt', { session: false }), 
+    passport.authenticate('jwt', { session: false }),
     getScoresById);
   router.get('/get_student_score_&_report/:studentId/:term/:session',
     passport.authenticate('jwt', { session: false }), getReportAndScoreByEmail);

@@ -1,7 +1,7 @@
 import express from 'express'
 import { Request, Response, NextFunction } from 'express';
 import { resendOTP, verifyOTP } from '../helpers/send-otp';
-import { verifyEmail, confirmPassword, register, forgetPassword, verifyOtpAndResetPassword, testEmailHandler } from "../controllers/authentication";
+import { verifyEmail, confirmPassword, register, forgetPassword, verifyOtpAndResetPassword } from "../controllers/authentication";
 
 export default (router: express.Router) => {
     router.post("/verify-otp", (req: Request, res: Response, next: NextFunction) => {
@@ -36,8 +36,8 @@ export default (router: express.Router) => {
         confirmPassword(req, res);
     });
 
-    router.post('/auth/test_email', (req, res) => {
-        // console.log("Request body:", req.body);
-        testEmailHandler(req, res);
-    });
+    // router.post('/auth/test_email', (req, res) => {
+    //     // console.log("Request body:", req.body);
+    //     testEmailHandler(req, res);
+    // });
 }; 
